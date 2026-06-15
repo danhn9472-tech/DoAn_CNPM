@@ -1,5 +1,6 @@
 using CongNghePhanMem_API.Data;
 using CongNghePhanMem_API.DTOs;
+using CongNghePhanMem_API.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
