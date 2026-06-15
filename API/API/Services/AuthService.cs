@@ -143,7 +143,8 @@ namespace CongNghePhanMem_API.Services
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(Convert.ToDouble(jwtSettings["DurationInMinutes"])),
+                // Quan trọng: Sử dụng UtcNow để đồng bộ chuẩn quốc tế của JWT
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["DurationInMinutes"])),
                 signingCredentials: creds
             );
 
