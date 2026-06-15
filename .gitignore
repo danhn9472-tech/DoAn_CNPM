@@ -3,3 +3,8 @@
 *.user
 *.suo
 *.cache
+.vs/
+TestResults/
+*.mdf
+*.ldf
+appsettings.Development.json
