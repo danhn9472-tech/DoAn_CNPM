@@ -76,6 +76,7 @@ builder.Services.AddAuthentication(options =>
 // Đăng ký AuthService vào Dependency Injection
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IPrescriptionService, PrescriptionService>();
 
 var app = builder.Build();
 
