@@ -102,7 +102,8 @@ namespace CongNghePhanMem_API.Services
 
             var conflicts = new List<ConflictWarningDto>();
 
-            // 1. Kiểm tra Tiền sử dị ứng
+            // BƯỚC 1: Kiểm tra Tiền sử dị ứng
+            // SELECT * FROM PatientAllergies WHERE PatientId = @PatientId AND DrugId = @DrugXId
             var allergy = await _context.PatientAllergies
                 .Include(a => a.Drug)
                 .FirstOrDefaultAsync(pa => pa.PatientId == prescription.PatientId && pa.DrugId == dto.DrugId);
@@ -112,11 +113,23 @@ namespace CongNghePhanMem_API.Services
                 conflicts.Add(new ConflictWarningDto { Type = "Allergy", Severity = "High", Description = $"Bệnh nhân dị ứng với {allergy.Drug.DrugName}. Triệu chứng: {allergy.Symptoms}" });
             }
 
-            // 2. Kiểm tra Tương tác thuốc với các thuốc đã có trong đơn
-            var existingDrugIds = prescription.PrescriptionDetails.Select(pd => pd.DrugId).ToList();
+            // BƯỚC 2: Kiểm tra Tương tác Thuốc - Thuốc
+            // Lấy danh sách DrugId từ đơn hiện tại VÀ các đơn có trạng thái 'DangUong'
+            var activeDrugIdsFromOtherPrescriptions = await _context.PrescriptionDetails
+                .Where(pd => pd.Prescription.PatientId == prescription.PatientId && 
+                             pd.Prescription.Status == PrescriptionStatus.DangUong && 
+                             pd.PrescriptionId != prescriptionId)
+                .Select(pd => pd.DrugId)
+                .ToListAsync();
+
+            var currentPrescriptionDrugIds = prescription.PrescriptionDetails.Select(pd => pd.DrugId).ToList();
+            
+            // Danh sách thuốc đang dùng tổng hợp (@DanhSachThuocDangUong)
+            var allActiveDrugIds = activeDrugIdsFromOtherPrescriptions.Union(currentPrescriptionDrugIds).Distinct().ToList();
+
             var interactions = await _context.DrugInteractions
-                .Where(di => (di.DrugId1 == dto.DrugId && existingDrugIds.Contains(di.DrugId2)) ||
-                             (di.DrugId2 == dto.DrugId && existingDrugIds.Contains(di.DrugId1)))
+                .Where(di => (di.DrugId1 == dto.DrugId && allActiveDrugIds.Contains(di.DrugId2)) ||
+                             (di.DrugId2 == dto.DrugId && allActiveDrugIds.Contains(di.DrugId1)))
                 .ToListAsync();
 
             foreach (var inter in interactions)
@@ -129,10 +142,10 @@ namespace CongNghePhanMem_API.Services
                 });
             }
 
-            // Nếu có xung đột mức độ nghiêm trọng (Chống chỉ định hoặc Dị ứng)
-            if (conflicts.Any(c => c.Type == "Allergy" || c.Severity == InteractionSeverity.ChongChiDinh.ToString()))
+            // Nếu phát hiện bất kỳ vi phạm nào ở bước 1 hoặc 2
+            if (conflicts.Any())
             {
-                return new PrescriptionActionResponse { Success = false, Message = "Phát hiện xung đột nguy hiểm.", Conflicts = conflicts };
+                return new PrescriptionActionResponse { Success = false, Message = "Phát hiện xung đột hoặc dị ứng.", Conflicts = conflicts };
             }
 
             // Nếu an toàn: Lưu vào database

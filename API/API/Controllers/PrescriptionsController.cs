@@ -51,8 +51,10 @@ namespace CongNghePhanMem_API.Controllers
         public async Task<IActionResult> AddDrug(int id, [FromBody] AddDrugDto dto)
         {
             var result = await _prescriptionService.AddDrugToPrescriptionAsync(GetUserId(), id, dto);
-            if (!result.Success) return Conflict(result);
-            return Ok(result);
+            
+            if (!result.Success) return Conflict(result); // Trả về 409 Conflict kèm JSON lỗi
+
+            return StatusCode(201, result); // Trả về 201 Created nếu thành công
         }
     }
 }
