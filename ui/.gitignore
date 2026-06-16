@@ -54,6 +54,7 @@ app.*.map.json
 # Plugin registrants & auto-generated files
 **/GeneratedPluginRegistrant.java
 **/GeneratedPluginRegistrant.h
+**/GeneratedPluginRegistrant.swift
 **/GeneratedPluginRegistrant.m
 **/generated_plugin_registrant.cc
 **/generated_plugin_registrant.h
