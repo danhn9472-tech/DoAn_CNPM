@@ -1,9 +1,13 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../models/auth_request.dart';
 import '../services/auth_service.dart';
+import '../services/storage_service.dart';
+import 'dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
+  final _storageService = StorageService();
   bool _isPasswordVisible = false;
   bool _isLoading = false;
 
@@ -29,7 +34,20 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? (result['success'] ? 'Đăng nhập thành công' : 'Thất bại'))));
+    if (result['success']) {
+      // Lưu token vào bộ nhớ an toàn trước khi chuyển màn hình
+      final token = result['data']['token']; // Key 'token' dựa trên Endpoint Use.txt
+      if (token != null) {
+        await _storageService.saveToken(token);
+      }
+      
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const DashboardScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Thất bại')));
+    }
   }
 
   @override
