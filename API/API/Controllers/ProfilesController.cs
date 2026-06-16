@@ -48,6 +48,13 @@ namespace CongNghePhanMem_API.Controllers
             return Ok(conditions);
         }
 
+        [HttpGet("conditions/search")]
+        public async Task<IActionResult> SearchConditions([FromQuery] string keyword)
+        {
+            var results = await _profileService.SearchConditionsAsync(keyword);
+            return Ok(results);
+        }
+
         [HttpPost("conditions")]
         public async Task<IActionResult> AddCondition([FromBody] AddConditionDto dto)
         {
@@ -77,6 +84,13 @@ namespace CongNghePhanMem_API.Controllers
             var success = await _profileService.AddAllergyAsync(GetUserId(), dto);
             if (!success) return BadRequest("Thêm dị ứng thất bại (có thể đã tồn tại trong danh sách).");
             return Ok(new { Message = "Thêm tiền sử dị ứng thành công." });
+        }
+
+        [HttpGet("allergies/search")]
+        public async Task<IActionResult> SearchAllergies([FromQuery] string keyword)
+        {
+            var results = await _profileService.SearchMyAllergiesAsync(GetUserId(), keyword);
+            return Ok(results);
         }
     }
 }

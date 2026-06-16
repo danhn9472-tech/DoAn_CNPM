@@ -168,5 +168,40 @@ namespace CongNghePhanMem_API.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<IEnumerable<ConditionSearchResponseDto>> SearchConditionsAsync(string keyword)
+        {
+            if (string.IsNullOrWhiteSpace(keyword)) return new List<ConditionSearchResponseDto>();
+
+            return await _context.MedicalConditions
+                .Where(c => c.ConditionName.Contains(keyword))
+                .Select(c => new ConditionSearchResponseDto
+                {
+                    ConditionId = c.ConditionId,
+                    ConditionName = c.ConditionName
+                })
+                .Take(10)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<PatientAllergyResponseDto>> SearchMyAllergiesAsync(int userId, string keyword)
+        {
+            var query = _context.PatientAllergies
+                .Where(pa => pa.Patient.UserId == userId);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(pa => pa.Drug.DrugName.Contains(keyword));
+            }
+
+            return await query.Select(pa => new PatientAllergyResponseDto
+            {
+                AllergyId = pa.AllergyId,
+                DrugName = pa.Drug.DrugName,
+                Severity = pa.Severity,
+                Symptoms = pa.Symptoms,
+                NotedDate = pa.NotedDate
+            }).ToListAsync();
+        }
     }
 }
