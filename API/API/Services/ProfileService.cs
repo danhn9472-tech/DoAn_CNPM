@@ -52,7 +52,9 @@ namespace CongNghePhanMem_API.Services
 
         public async Task<bool> UpdateProfileAsync(int userId, UpdateProfileDto dto)
         {
-            var patient = await _context.Patients.FirstOrDefaultAsync(p => p.UserId == userId);
+            var patient = await _context.Patients
+                .Include(p => p.HealthProfile)
+                .FirstOrDefaultAsync(p => p.UserId == userId);
             if (patient == null) return false;
 
             patient.FullName = dto.FullName;
@@ -60,6 +62,24 @@ namespace CongNghePhanMem_API.Services
             patient.Gender = dto.Gender;
             patient.PhoneNumber = dto.PhoneNumber;
             patient.Address = dto.Address;
+
+            if (patient.HealthProfile == null)
+            {
+                patient.HealthProfile = new HealthProfile
+                {
+                    BloodType = dto.BloodType,
+                    Height = dto.Height,
+                    Weight = dto.Weight,
+                    LastUpdated = DateTime.Now
+                };
+            }
+            else
+            {
+                patient.HealthProfile.BloodType = dto.BloodType;
+                patient.HealthProfile.Height = dto.Height;
+                patient.HealthProfile.Weight = dto.Weight;
+                patient.HealthProfile.LastUpdated = DateTime.Now;
+            }
 
             await _context.SaveChangesAsync();
             return true;
