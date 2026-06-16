@@ -1,0 +1,169 @@
+# Tài liệu Tổng hợp API & Cấu trúc Dữ liệu - Hệ thống Cảnh Báo Thuốc
+
+Tài liệu này tổng hợp các Endpoint, DTO và Thực thể chính để phục vụ việc phát triển giao diện ứng dụng.
+
+---
+
+## 1. Xác thực & Người dùng (Authentication)
+**Controller:** `AuthController` | **Base Path:** `/api/auth`
+
+| Phương thức | Endpoint | Yêu cầu Auth | Mô tả |
+| :--- | :--- | :--- | :--- |
+| POST | `/login` | Không | Đăng nhập hệ thống. Trả về JWT Token, Vai trò (Role). |
+| POST | `/register` | Không | Đăng ký tài khoản mới (Bệnh nhân hoặc Bác sĩ). |
+| GET | `/profile` | Có | Lấy thông tin cơ bản của người dùng hiện tại từ Token. |
+
+**Thông tin chính (AuthResponse):**
+- `Token`: Chuỗi JWT dùng để gửi trong Header `Authorization: Bearer <token>`.
+- `Role`: `Admin`, `Doctor`, `Patient`.
+
+---
+
+## 2. Hồ sơ Sức khỏe & Tiền sử (Profiles)
+**Controller:** `ProfilesController` | **Base Path:** `/api/Profiles`
+
+| Phương thức | Endpoint | Mô tả |
+| :--- | :--- | :--- |
+| GET | `/my-profile` | Lấy thông tin cá nhân (Họ tên, ngày sinh, BMI, nhóm máu...). |
+| PUT | `/my-profile` | Cập nhật thông tin cá nhân. |
+| GET | `/conditions` | Danh sách bệnh lý nền của bệnh nhân. |
+| POST | `/conditions` | Thêm một bệnh lý nền mới. |
+| DELETE | `/conditions/{id}`| Xóa bệnh lý nền theo ID. |
+| GET | `/allergies` | Danh sách dị ứng thuốc. |
+| POST | `/allergies` | Thêm thông tin dị ứng (Thuốc, mức độ, triệu chứng). |
+
+**Lưu ý UI:** 
+- `BMI` được hệ thống tự động tính toán dựa trên chiều cao và cân nặng trong `HealthProfileResponseDto`.
+
+---
+
+## 3. Tra cứu Thuốc (Drugs)
+**Controller:** `DrugsController` | **Base Path:** `/api/Drugs`
+
+| Phương thức | Endpoint | Tham số | Mô tả |
+| :--- | :--- | :--- | :--- |
+| GET | `/search` | `keyword` | Tìm kiếm thuốc theo tên hoặc hoạt chất. |
+| GET | `/{id}` | `id` | Xem chi tiết thông tin thuốc (Hướng dẫn, tác dụng phụ). |
+
+---
+
+## 4. Quản lý Đơn thuốc (Prescriptions)
+**Service:** `PrescriptionService` (Logic nghiệp vụ chính)
+
+| Chức năng | Thông tin chính |
+| :--- | :--- |
+| **Lấy danh sách đơn** | Lọc theo trạng thái (`Active` - Đang uống, `Expired` - Đã dùng). |
+| **Chi tiết đơn thuốc** | Bao gồm thông tin bác sĩ, chẩn đoán và danh sách các loại thuốc kèm liều lượng. |
+| **Tạo đơn thuốc** | Khởi tạo đơn thuốc với chẩn đoán ban đầu (Trạng thái mặc định: Chờ duyệt). |
+| **Thêm thuốc vào đơn** | **Cực kỳ quan trọng:** Hệ thống sẽ kiểm tra xung đột (Dị ứng & Tương tác thuốc) trước khi cho phép thêm. |
+
+**Xử lý Xung đột (ConflictWarningDto):**
+Khi thêm thuốc, nếu thất bại, API sẽ trả về danh sách `Conflicts` gồm:
+- `Type`: `Allergy` (Dị ứng) hoặc `Interaction` (Tương tác thuốc).
+- `Severity`: Mức độ nghiêm trọng (`High`, `Moderate`, `Low`).
+- `Description`: Mô tả chi tiết để hiển thị cảnh báo trên UI.
+
+---
+
+## 5. Quản trị hệ thống (Admin)
+**Controller:** `AdminController` | **Base Path:** `/api/admin`
+*(Chỉ dành cho tài khoản có Role = Admin)*
+
+| Phương thức | Endpoint | Mô tả |
+| :--- | :--- | :--- |
+| POST | `/drugs` | Thêm thuốc mới vào danh mục gốc. |
+| PUT | `/drugs/{id}` | Cập nhật thông tin thuốc. |
+| GET | `/interactions` | Xem tất cả quy tắc tương tác thuốc hiện có. |
+| POST | `/interactions` | Thiết lập quy tắc tương tác giữa 2 loại thuốc. |
+| DELETE | `/interactions/{id}`| Xóa quy tắc tương tác. |
+
+---
+
+## 6. Chi tiết Cấu trúc Dữ liệu (DTOs)
+
+### Nhóm DTO Auth
+```json
+// RegisterRequest
+{
+  "username": "string",
+  "password": "string",
+  "fullName": "string",
+  "role": 0 // 0: Admin, 1: Doctor, 2: Patient
+}
+```
+
+### Nhóm DTO Hồ sơ (Profile)
+```json
+// HealthProfileResponseDto
+{
+  "fullName": "string",
+  "dateOfBirth": "yyyy-MM-dd",
+  "gender": "string",
+  "phoneNumber": "string",
+  "address": "string",
+  "bloodType": "string",
+  "height": 170.5,
+  "weight": 65.0,
+  "bmi": 22.35
+}
+```
+
+### Nhóm DTO Đơn thuốc (Prescription)
+```json
+// AddDrugDto
+{
+  "drugId": 0,
+  "dosage": "string (ví dụ: 1 viên)",
+  "frequency": "string (ví dụ: 2 lần/ngày)",
+  "startDate": "datetime",
+  "endDate": "datetime"
+}
+
+// PrescriptionActionResponse (Kết quả khi thêm thuốc)
+{
+  "success": false,
+  "message": "Phát hiện xung đột hoặc dị ứng.",
+  "conflicts": [
+    {
+      "type": "Interaction",
+      "severity": "High",
+      "description": "Tương tác nguy hiểm với thuốc ABC..."
+    }
+  ]
+}
+```
+
+---
+
+## 7. Sơ đồ Thực thể Chính (Entities)
+
+1.  **User**: Thông tin đăng nhập, phân quyền.
+2.  **Patient**: Thông tin chi tiết bệnh nhân, liên kết 1-1 với `User`.
+3.  **Doctor**: Thông tin bác sĩ, liên kết 1-1 với `User`.
+4.  **HealthProfile**: Chỉ số hình thể (Cao, nặng, nhóm máu).
+5.  **Drug**: Danh mục thuốc gốc.
+6.  **DrugInteraction**: Định nghĩa các cặp thuốc không nên dùng cùng nhau.
+7.  **PatientAllergy**: Lưu trữ các loại thuốc mà bệnh nhân bị dị ứng.
+8.  **PatientCondition**: Các bệnh lý nền bệnh nhân đang mắc phải.
+9.  **Prescription**: Thông tin chung của đơn thuốc (Ngày tạo, chẩn đoán, trạng thái).
+10. **PrescriptionDetail**: Chi tiết từng loại thuốc trong đơn (Liều dùng, thời gian dùng).
+
+---
+
+## 8. Các quy định nghiệp vụ cần lưu ý cho UI
+- **Định dạng ngày:** Sử dụng `yyyy-MM-dd` cho ngày sinh và `ISO DateTime` cho các trường thời gian khác.
+- **Trạng thái đơn thuốc:** 
+    - `ChoDuyet`: Đơn thuốc đang trong quá trình soạn thảo.
+    - `DangUong`: Đơn thuốc đang có hiệu lực.
+    - `DaDung`: Đơn thuốc đã hoàn thành hoặc hết hạn.
+- **Ràng buộc:** 
+    - Tuổi bệnh nhân phải từ 0 - 120 tuổi.
+    - Chiều cao/Cân nặng là số thập phân (tối đa 5 chữ số, 2 số sau dấu phẩy).
+    - Tên đăng nhập là duy nhất.
+```
+
+Hy vọng bản tổng hợp này sẽ giúp quá trình phát triển UI của bạn thuận lợi hơn. Nếu bạn cần chi tiết thêm về một Endpoint cụ thể nào, đừng ngần ngại yêu cầu nhé!
+
+<!--
+[PROMPT_SUGGESTION]Tạo một file mẫu JSON cho tất cả các request body của các API đã liệt kê[/PROMPT_SUGGESTION]
+[PROMPT_SUGGESTION]Giải thích chi tiết hơn về logic kiểm tra tương tác thuốc trong PrescriptionService[/PROMPT_SUGGESTION]

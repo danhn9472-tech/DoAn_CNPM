@@ -1,0 +1,3 @@
+Viết UI phải tuân thủ theo những gì có trong API
+Không vẽ UI lê thê
+Không giả định dữ liệu. trong trường hợp thiếu thì hãy yêu cầu cung cấp thêm mã nguồn.
