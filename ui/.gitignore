@@ -59,4 +59,6 @@ app.*.map.json
 **/generated_plugin_registrant.h
 **/generated_plugin_registrant.dart
 **/generated_main_dartexecutable.dart
+**/generated_plugins.cmake
+**/generated_plugins.txt
 pubspec.lock

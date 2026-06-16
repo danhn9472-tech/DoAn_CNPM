@@ -1,7 +1,30 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:window_manager/window_manager.dart';
 import 'views/login_screen.dart';
+import 'views/app_colors.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Cấu hình kích thước cửa sổ cho Desktop (Windows/macOS/Linux)
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    await windowManager.ensureInitialized();
+
+    WindowOptions windowOptions = const WindowOptions(
+      size: Size(390, 844), // Kích thước tương đương iPhone 13/14
+      minimumSize: Size(390, 844), // Không thể thu nhỏ hơn
+      center: true,
+      backgroundColor: Colors.transparent,
+      skipTaskbar: false,
+      title: "MedAlert",
+    );
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
+  }
+
   runApp(const MyApp());
 }
 
@@ -17,19 +40,19 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         // Cấu hình màu sắc theo FigmaUI.txt
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0284C7), // Primary
-          primary: const Color(0xFF0284C7),
-          surface: const Color(0xFFF8FAFC), // Background
-          error: const Color(0xFFEF4444), // Danger
-          onSurface: const Color(0xFF0F172A), // Text Dark
+          seedColor: AppColors.primary,
+          primary: AppColors.primary,
+          surface: AppColors.background,
+          error: AppColors.danger,
+          onSurface: AppColors.textDark,
         ),
-        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+        scaffoldBackgroundColor: AppColors.background,
         
         // Cấu hình font và style chung
         fontFamily: 'Inter', // Hoặc font bạn đã cài đặt
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF0284C7),
+            backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             minimumSize: const Size.fromHeight(48),
             shape: RoundedRectangleBorder(
@@ -40,14 +63,14 @@ class MyApp extends StatelessWidget {
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: Colors.white,
+          fillColor: AppColors.cardWhite,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            borderSide: const BorderSide(color: AppColors.border),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+            borderSide: const BorderSide(color: AppColors.border),
           ),
         ),
       ),

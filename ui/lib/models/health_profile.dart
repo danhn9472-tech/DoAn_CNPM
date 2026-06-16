@@ -34,4 +34,51 @@ class HealthProfileResponseDto {
       bmi: (json['bmi'] as num?)?.toDouble() ?? 0.0,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'fullName': fullName,
+      'dateOfBirth': dateOfBirth,
+      'gender': gender,
+      'phoneNumber': phoneNumber,
+      'address': address,
+      'bloodType': bloodType,
+      'height': height,
+      'weight': weight,
+    };
+  }
+}
+
+class PatientConditionDto {
+  final int id;
+  final String conditionName;
+  final String? description;
+
+  PatientConditionDto({required this.id, required this.conditionName, this.description});
+
+  factory PatientConditionDto.fromJson(Map<String, dynamic> json) {
+    return PatientConditionDto(
+      id: json['id'],
+      conditionName: json['conditionName'] ?? '',
+      description: json['description'],
+    );
+  }
+}
+
+class PatientAllergyDto {
+  final int id;
+  final String drugName;
+  final String severity; // High, Moderate, Low
+  final String? symptoms;
+
+  PatientAllergyDto({required this.id, required this.drugName, required this.severity, this.symptoms});
+
+  factory PatientAllergyDto.fromJson(Map<String, dynamic> json) {
+    return PatientAllergyDto(
+      id: json['id'],
+      drugName: json['drugName'] ?? '',
+      severity: json['severity'] ?? 'Low',
+      symptoms: json['symptoms'],
+    );
+  }
 }
