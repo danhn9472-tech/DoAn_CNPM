@@ -5,12 +5,14 @@ class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
   final bool isLoading;
+  final Color? backgroundColor; // Add backgroundColor property
 
   const PrimaryButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.isLoading = false,
+    this.backgroundColor, // Initialize backgroundColor
   });
 
   @override
@@ -21,7 +23,7 @@ class PrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: backgroundColor ?? AppColors.primary, // Use custom color or default
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: 0,
         ),

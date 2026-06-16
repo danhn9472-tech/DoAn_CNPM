@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import '../models/health_profile.dart';
+import 'package:intl/intl.dart'; // Import for DateFormat
 import '../services/profile_service.dart';
 import '../services/storage_service.dart';
 
@@ -63,7 +64,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (token == null || _profile == null) return;
 
     String formattedDate = _selectedDate != null 
-        ? "${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}"
+        ? DateFormat('yyyy-MM-dd').format(_selectedDate!)
         : _profile!.dateOfBirth;
 
     double? newHeight = double.tryParse(_heightController.text);
@@ -140,7 +141,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       right: 0,
                       child: GestureDetector(
                         onTap: () {
-                          // TODO: Implement image picking logic
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text("Chức năng thay đổi ảnh đại diện chưa được triển khai.")),
                           );
@@ -240,13 +240,36 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Widget _buildDatePicker() {
-    String displayDate = _selectedDate != null ? "${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}" : "Chọn ngày sinh";
-    return InkWell(
+    String formattedDisplayDate = _selectedDate != null
+        ? DateFormat('dd / MM / yyyy').format(_selectedDate!)
+        : "Chọn ngày sinh";
+
+    return GestureDetector(
       onTap: () async {
-        DateTime? picked = await showDatePicker(context: context, initialDate: _selectedDate ?? DateTime.now(), firstDate: DateTime(1900), lastDate: DateTime.now());
-        if (picked != null) setState(() => _selectedDate = picked);
+        DateTime? picked = await showDatePicker(
+          context: context,
+          initialDate: _selectedDate ?? DateTime.now(),
+          firstDate: DateTime(1900),
+          lastDate: DateTime.now(),
+          builder: (context, child) { // Apply theme for date picker
+            return Theme(data: Theme.of(context).copyWith(colorScheme: const ColorScheme.light(primary: AppColors.primary, onPrimary: Colors.white, onSurface: AppColors.textDark,), textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: AppColors.primary,),),), child: child!,);
+          },
+        );
+        if (picked != null && picked != _selectedDate) setState(() => _selectedDate = picked);
       },
-      child: Row(children: [const Icon(Icons.calendar_today_outlined, color: AppColors.textMuted, size: 20), const SizedBox(width: 12), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Ngày sinh", style: TextStyle(color: AppColors.textMuted, fontSize: 12)), Text(displayDate, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15))])]),
+      child: Row(
+        children: [
+          const Icon(Icons.calendar_today_outlined, color: AppColors.textMuted, size: 20),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Ngày sinh", style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+              Text(formattedDisplayDate, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -266,8 +289,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ButtonSegment<String>(value: 'Nam', label: Text('Nam')),
                   ButtonSegment<String>(value: 'Nữ', label: Text('Nữ')),
                   ButtonSegment<String>(value: 'Khác', label: Text('Khác')),
-                ],
-                selected: <String>{_selectedGender ?? ''},
+                ], // Pass an empty set if _selectedGender is null
+                selected: _selectedGender != null ? <String>{_selectedGender!} : <String>{},
                 onSelectionChanged: (Set<String> newSelection) {
                   if (newSelection.isNotEmpty) {
                     setState(() => _selectedGender = newSelection.first);
