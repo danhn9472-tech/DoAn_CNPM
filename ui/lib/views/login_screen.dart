@@ -8,6 +8,7 @@ import '../models/auth_request.dart';
 import '../services/auth_service.dart';
 import '../services/storage_service.dart';
 import 'dashboard_screen.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -158,6 +159,23 @@ class _LoginScreenState extends State<LoginScreen> {
                           _socialButton("Google"),
                           const SizedBox(width: 16),
                           _socialButton("Facebook"),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text("Chưa có tài khoản?", style: TextStyle(color: AppColors.textMuted)),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                              );
+                            },
+                            child: const Text("Đăng ký ngay", style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                          ),
                         ],
                       )
                     ],

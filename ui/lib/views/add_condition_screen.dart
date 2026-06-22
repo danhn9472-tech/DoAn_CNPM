@@ -1,8 +1,11 @@
 // ignore_for_file: unused_import, deprecated_member_use
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:rxdart/rxdart.dart';
 import '../models/health_profile.dart';
+import '../models/condition.dart';
 import '../services/profile_service.dart';
 import '../services/storage_service.dart';
 import 'app_colors.dart';
@@ -25,6 +28,44 @@ class _AddConditionScreenState extends State<AddConditionScreen> {
 
   final ProfileService _profileService = ProfileService();
   final StorageService _storageService = StorageService();
+
+  final PublishSubject<String> _searchSubject = PublishSubject<String>();
+  List<ConditionSearchResponseDto> _suggestions = [];
+  bool _isSearchingConditions = false;
+  StreamSubscription? _searchSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchSubscription = _searchSubject
+        .debounceTime(const Duration(milliseconds: 400))
+        .distinct()
+        .switchMap((keyword) {
+          if (keyword.trim().isEmpty) {
+            return Stream.value(<ConditionSearchResponseDto>[]);
+          }
+          if (mounted) {
+            setState(() {
+              _isSearchingConditions = true;
+            });
+          }
+          return Stream.fromFuture(_searchConditions(keyword));
+        })
+        .listen((results) {
+          if (mounted) {
+            setState(() {
+              _suggestions = results;
+              _isSearchingConditions = false;
+            });
+          }
+        });
+  }
+
+  Future<List<ConditionSearchResponseDto>> _searchConditions(String keyword) async {
+    final token = await _storageService.getToken();
+    if (token == null) return [];
+    return await _profileService.searchConditions(token, keyword);
+  }
 
   Future<void> _addCondition() async {
     if (!_formKey.currentState!.validate()) return;
@@ -76,6 +117,8 @@ class _AddConditionScreenState extends State<AddConditionScreen> {
   @override
   void dispose() {
     _notesController.dispose();
+    _searchSubject.close();
+    _searchSubscription?.cancel();
     super.dispose();
   }
 
@@ -142,13 +185,12 @@ class _AddConditionScreenState extends State<AddConditionScreen> {
                     // Condition Name Field
                     _buildSectionTitle("Tên bệnh lý nền *"),
                     Autocomplete<ConditionSearchResponseDto>(
-                      optionsBuilder: (TextEditingValue textEditingValue) async {
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        _searchSubject.add(textEditingValue.text);
                         if (textEditingValue.text.isEmpty) {
                           return const Iterable<ConditionSearchResponseDto>.empty();
                         }
-                        final token = await _storageService.getToken();
-                        if (token == null) return const Iterable<ConditionSearchResponseDto>.empty();
-                        return await _profileService.searchConditions(token, textEditingValue.text);
+                        return _suggestions;
                       },
                       displayStringForOption: (ConditionSearchResponseDto option) => option.conditionName,
                       onSelected: (ConditionSearchResponseDto selection) {
@@ -176,6 +218,15 @@ class _AddConditionScreenState extends State<AddConditionScreen> {
                           decoration: InputDecoration(
                             hintText: "Tìm kiếm bệnh lý (VD: dạ dày, suy tim...)",
                             prefixIcon: const Icon(Icons.search, color: AppColors.textMuted),
+                            suffixIcon: _isSearchingConditions
+                                ? const Padding(
+                                    padding: EdgeInsets.all(12.0),
+                                    child: SizedBox(
+                                      width: 16, height: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                  )
+                                : null,
                             filled: true,
                             fillColor: AppColors.cardWhite,
                             border: OutlineInputBorder(

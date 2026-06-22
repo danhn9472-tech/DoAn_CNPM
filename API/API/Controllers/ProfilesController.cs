@@ -86,6 +86,14 @@ namespace CongNghePhanMem_API.Controllers
             return Ok(new { Message = "Thêm tiền sử dị ứng thành công." });
         }
 
+        [HttpDelete("allergies/{id}")]
+        public async Task<IActionResult> RemoveAllergy(int id)
+        {
+            var success = await _profileService.RemoveAllergyAsync(GetUserId(), id);
+            if (!success) return NotFound("Không tìm thấy dị ứng để xóa hoặc không có quyền.");
+            return Ok(new { Message = "Xóa dị ứng thành công." });
+        }
+
         [HttpGet("allergies/search")]
         public async Task<IActionResult> SearchAllergies([FromQuery] string keyword)
         {

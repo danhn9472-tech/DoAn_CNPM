@@ -10,5 +10,6 @@ namespace CongNghePhanMem_API.Services
         Task<PrescriptionDetailResponseDto?> GetPrescriptionByIdAsync(int userId, int prescriptionId);
         Task<int> CreatePrescriptionAsync(int userId, CreatePrescriptionDto dto);
         Task<PrescriptionActionResponse> AddDrugToPrescriptionAsync(int userId, int prescriptionId, AddDrugDto dto);
+        Task<bool> DeletePrescriptionAsync(int userId, int prescriptionId);
     }
 }

@@ -3,6 +3,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/health_profile.dart'; // Assuming this path
+import '../models/condition.dart';
+import '../models/allergy.dart';
 
 class ProfileService {
   static const String baseUrl = 'https://localhost:7170/api'; // Cập nhật theo port thực tế của backend
@@ -172,6 +174,31 @@ class ProfileService {
         return {'success': true, 'message': 'Xóa bệnh lý nền thành công'};
       } else {
         String message = 'Xóa bệnh lý nền thất bại';
+        try {
+          final errorData = jsonDecode(response.body);
+          message = errorData['message'] ?? message;
+        } catch (_) {}
+        return {'success': false, 'message': message};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Không thể kết nối đến máy chủ: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> removeAllergy(String token, int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/Profiles/allergies/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        return {'success': true, 'message': 'Xóa dị ứng thành công'};
+      } else {
+        String message = 'Xóa dị ứng thất bại';
         try {
           final errorData = jsonDecode(response.body);
           message = errorData['message'] ?? message;

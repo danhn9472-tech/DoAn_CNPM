@@ -1,11 +1,15 @@
 // ignore_for_file: unused_import, prefer_final_fields, deprecated_member_use
 
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:http/http.dart' as http;
 import '../models/health_profile.dart';
+import '../models/allergy.dart';
 import '../services/profile_service.dart';
 import '../services/storage_service.dart';
+import '../services/drug_service.dart';
 import 'app_colors.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/custom_text_field.dart'; // Reusing CustomTextField
@@ -27,38 +31,45 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
 
   final ProfileService _profileService = ProfileService();
   final StorageService _storageService = StorageService();
+  final DrugService _drugService = DrugService();
 
   final List<String> _predefinedSymptoms = [
     "Nổi mề đay", "Sưng phù", "Khó thở", "Nôn mửa",
     "Ngứa da", "Phát ban toàn thân", "Tụt huyết áp", "Tim đập nhanh"
   ];
 
-  // Hàm gọi API tìm kiếm thuốc từ Backend
-  Future<List<Map<String, dynamic>>> _searchDrugs(String keyword) async {
-    if (keyword.isEmpty) return [];
-    try {
-      final token = await _storageService.getToken();
-      if (token == null) return [];
+  final PublishSubject<String> _searchSubject = PublishSubject<String>();
+  List<Map<String, dynamic>> _suggestions = [];
+  bool _isSearchingDrugs = false;
+  StreamSubscription? _searchSubscription;
 
-      // LƯU Ý: Cập nhật URL thành địa chỉ API thực tế (IP hoặc domain của bạn)
-      final url = Uri.parse('https://localhost:7119/api/Drugs/search?keyword=$keyword');
-      final response = await http.get(
-        url,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data.cast<Map<String, dynamic>>();
-      }
-    } catch (e) {
-      debugPrint("Lỗi tìm kiếm thuốc: $e");
-    }
-    return [];
+  @override
+  void initState() {
+    super.initState();
+    _searchSubscription = _searchSubject
+        .debounceTime(const Duration(milliseconds: 400))
+        .distinct()
+        .switchMap((keyword) {
+          if (keyword.trim().isEmpty) {
+            return Stream.value(<Map<String, dynamic>>[]);
+          }
+          if (mounted) {
+            setState(() {
+              _isSearchingDrugs = true;
+            });
+          }
+          return Stream.fromFuture(_drugService.searchDrugs(keyword));
+        })
+        .listen((results) {
+          if (mounted) {
+            setState(() {
+              _suggestions = results;
+              _isSearchingDrugs = false;
+            });
+          }
+        });
   }
+
 
   Future<void> _addAllergy() async {
     if (!_formKey.currentState!.validate()) return;
@@ -116,6 +127,8 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
   @override
   void dispose() {
     _otherSymptomsController.dispose();
+    _searchSubject.close();
+    _searchSubscription?.cancel();
     super.dispose();
   }
 
@@ -197,13 +210,14 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
                     // Drug Name Field
                     _buildSectionTitle("Thuốc / Hoạt chất gây dị ứng *"),
                     Autocomplete<Map<String, dynamic>>(
-                      // Khi người dùng gõ, API sẽ được gọi
-                      optionsBuilder: (TextEditingValue textEditingValue) async {
-                        return await _searchDrugs(textEditingValue.text);
+                      optionsBuilder: (TextEditingValue textEditingValue) {
+                        _searchSubject.add(textEditingValue.text);
+                        if (textEditingValue.text.isEmpty) {
+                          return const Iterable<Map<String, dynamic>>.empty();
+                        }
+                        return _suggestions;
                       },
-                      // Lấy DrugName từ JSON để hiển thị ra dropdown
                       displayStringForOption: (option) => option['drugName'],
-                      // Sự kiện người dùng bấm chọn 1 dòng
                       onSelected: (option) {
                         setState(() {
                           _selectedDrugId = option['drugId'];
@@ -214,7 +228,6 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
                           controller: controller,
                           focusNode: focusNode,
                           onChanged: (value) {
-                            // Bắt buộc chọn lại từ danh sách nếu cố tình sửa text đã chọn
                             if (_selectedDrugId != null) {
                               setState(() {
                                 _selectedDrugId = null;
@@ -224,6 +237,15 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
                           decoration: InputDecoration(
                             hintText: "Tìm tên biệt dược (VD: Penicillin...)",
                             prefixIcon: const Icon(Icons.search),
+                            suffixIcon: _isSearchingDrugs
+                                ? const Padding(
+                                    padding: EdgeInsets.all(12.0),
+                                    child: SizedBox(
+                                      width: 16, height: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    ),
+                                  )
+                                : null,
                             filled: true,
                             fillColor: AppColors.cardWhite,
                             border: OutlineInputBorder(

@@ -152,7 +152,7 @@ namespace CongNghePhanMem_API.Services
             // Logic QĐ: Kiểm tra xem thuốc này đã có trong danh sách dị ứng chưa
             var exists = await _context.PatientAllergies
                 .AnyAsync(pa => pa.PatientId == patient.PatientId && pa.DrugId == dto.DrugId);
-            
+
             if (exists) return false;
 
             var allergy = new PatientAllergy
@@ -169,6 +169,18 @@ namespace CongNghePhanMem_API.Services
             return true;
         }
 
+        public async Task<bool> RemoveAllergyAsync(int userId, int allergyId)
+        {
+            var allergy = await _context.PatientAllergies
+                .FirstOrDefaultAsync(pa => pa.AllergyId == allergyId && pa.Patient.UserId == userId);
+
+            if (allergy == null) return false;
+
+            _context.PatientAllergies.Remove(allergy);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<IEnumerable<ConditionSearchResponseDto>> SearchConditionsAsync(string keyword)
         {
             if (string.IsNullOrWhiteSpace(keyword)) return new List<ConditionSearchResponseDto>();
@@ -180,7 +192,7 @@ namespace CongNghePhanMem_API.Services
                     ConditionId = c.ConditionId,
                     ConditionName = c.ConditionName
                 })
-                .Take(10)
+                .Take(5)
                 .ToListAsync();
         }
 
@@ -201,7 +213,9 @@ namespace CongNghePhanMem_API.Services
                 Severity = pa.Severity,
                 Symptoms = pa.Symptoms,
                 NotedDate = pa.NotedDate
-            }).ToListAsync();
+            })
+            .Take(5)
+            .ToListAsync();
         }
     }
 }
