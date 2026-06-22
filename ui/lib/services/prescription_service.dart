@@ -60,4 +60,23 @@ class PrescriptionService {
       return {'success': false, 'message': 'Lỗi kết nối: $e'};
     }
   }
+
+  Future<Map<String, dynamic>> getPrescriptionDetail(int id) async {
+    final token = await _storageService.getToken();
+    if (token == null) throw Exception('Token not found');
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/Prescriptions/$id'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load prescription detail. Status: ${response.statusCode}');
+    }
+  }
 }

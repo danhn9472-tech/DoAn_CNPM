@@ -21,7 +21,7 @@ namespace CongNghePhanMem_API.Services
             if (string.IsNullOrWhiteSpace(keyword)) return new List<DoctorSearchResponseDto>();
 
             return await _context.Doctors
-                .Where(d => d.FullName.Contains(keyword) || (d.Specialty != null && d.Specialty.Contains(keyword)))
+                .Where(d => d.FullName.StartsWith(keyword) || (d.Specialty != null && d.Specialty.StartsWith(keyword)))
                 .Select(d => new DoctorSearchResponseDto
                 {
                     DoctorId = d.DoctorId,

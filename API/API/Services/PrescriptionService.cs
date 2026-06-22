@@ -83,7 +83,7 @@ namespace CongNghePhanMem_API.Services
                 DoctorId = dto.DoctorId,
                 Diagnosis = dto.Diagnosis,
                 Notes = dto.Notes,
-                Status = PrescriptionStatus.ChoDuyet, // Trạng thái chờ (Draft)
+                Status = PrescriptionStatus.DangUong, // Trạng thái đang dùng
                 CreatedDate = DateTime.Now
             };
 

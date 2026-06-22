@@ -24,6 +24,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   HealthProfileResponseDto? _profile;
   bool _isLoading = true;
   int _currentIndex = 0;
+  Key _prescriptionListKey = UniqueKey();
 
   @override
   void initState() {
@@ -60,7 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final List<Widget> screens = [
       _buildHomeBody(),
-      const PrescriptionListScreen(),
+      PrescriptionListScreen(key: _prescriptionListKey),
       const HealthProfileScreen(),
       _buildSettingsBody(),
     ];
@@ -86,12 +87,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // Cho phép FAB hiển thị ở cả màn Trang chủ và màn Đơn thuốc
       floatingActionButton: (_currentIndex == 0 || _currentIndex == 1)
           ? FloatingActionButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_currentIndex == 1) {
-                  Navigator.push(
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AddPrescriptionScreen()),
                   );
+                  if (result == true) {
+                    setState(() {
+                      _prescriptionListKey = UniqueKey();
+                    });
+                  }
                 }
               },
               backgroundColor: AppColors.primary,

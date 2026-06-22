@@ -22,7 +22,7 @@ namespace CongNghePhanMem_API.Services
             if (string.IsNullOrWhiteSpace(keyword)) return new List<DrugSearchResponseDto>();
 
             return await _context.Drugs
-                .Where(d => d.DrugName.Contains(keyword) || (d.ActiveIngredient != null && d.ActiveIngredient.Contains(keyword)))
+                .Where(d => d.DrugName.StartsWith(keyword) || (d.ActiveIngredient != null && d.ActiveIngredient.StartsWith(keyword)))
                 .Select(d => new DrugSearchResponseDto
                 {
                     DrugId = d.DrugId,
