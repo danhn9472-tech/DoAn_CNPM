@@ -142,7 +142,7 @@ namespace CongNghePhanMem_API.Services
                 });
             }
 
-            // Nếu phát hiện bất kỳ vi phạm nào ở bước 1 hoặc 2
+            // Nếu phát hiện bất kỳ vi phạm nào ở bước 1 hoặc 2, không lưu và trả về cảnh báo
             if (conflicts.Any())
             {
                 return new PrescriptionActionResponse { Success = false, Message = "Phát hiện xung đột hoặc dị ứng.", Conflicts = conflicts };
@@ -162,7 +162,20 @@ namespace CongNghePhanMem_API.Services
             _context.PrescriptionDetails.Add(detail);
             await _context.SaveChangesAsync();
 
-            return new PrescriptionActionResponse { Success = true, Message = "Thêm thuốc vào đơn thành công.", Conflicts = conflicts.Any() ? conflicts : null };
+            // Trả về thành công khi không có conflict
+            return new PrescriptionActionResponse { Success = true, Message = "Thêm thuốc an toàn." };
+        }
+
+        public async Task<bool> DeletePrescriptionAsync(int userId, int prescriptionId)
+        {
+            var prescription = await _context.Prescriptions
+                .FirstOrDefaultAsync(p => p.PrescriptionId == prescriptionId && p.Patient.UserId == userId);
+            
+            if (prescription == null) return false;
+
+            _context.Prescriptions.Remove(prescription);
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

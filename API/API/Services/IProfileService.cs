@@ -15,5 +15,6 @@ namespace CongNghePhanMem_API.Services
         Task<bool> AddAllergyAsync(int userId, AddAllergyDto dto);
         Task<IEnumerable<ConditionSearchResponseDto>> SearchConditionsAsync(string keyword);
         Task<IEnumerable<PatientAllergyResponseDto>> SearchMyAllergiesAsync(int userId, string keyword);
+        Task<bool> RemoveAllergyAsync(int userId, int allergyId);
     }
 }

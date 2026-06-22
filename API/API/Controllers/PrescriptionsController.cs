@@ -56,5 +56,13 @@ namespace CongNghePhanMem_API.Controllers
 
             return StatusCode(201, result); // Trả về 201 Created nếu thành công
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> RemovePrescription(int id)
+        {
+            var success = await _prescriptionService.DeletePrescriptionAsync(GetUserId(), id);
+            if (!success) return NotFound(new { Message = "Không tìm thấy đơn thuốc hoặc bạn không có quyền xóa." });
+            return Ok(new { Message = "Đã xóa đơn thuốc thành công." });
+        }
     }
 }

@@ -8,6 +8,8 @@ import '../services/storage_service.dart';
 import 'health_profile_screen.dart';
 import 'edit_profile_screen.dart';
 import 'login_screen.dart';
+import 'prescription_list_screen.dart';
+import 'add_prescription_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -58,7 +60,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final List<Widget> screens = [
       _buildHomeBody(),
-      const Center(child: Text("Danh sách đơn thuốc")),
+      const PrescriptionListScreen(),
       const HealthProfileScreen(),
       _buildSettingsBody(),
     ];
@@ -81,9 +83,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: 'Cài đặt'),
         ],
       ),
-      floatingActionButton: _currentIndex == 0
+      // Cho phép FAB hiển thị ở cả màn Trang chủ và màn Đơn thuốc
+      floatingActionButton: (_currentIndex == 0 || _currentIndex == 1)
           ? FloatingActionButton(
-              onPressed: () {},
+              onPressed: () {
+                if (_currentIndex == 1) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AddPrescriptionScreen()),
+                  );
+                }
+              },
               backgroundColor: AppColors.primary,
               shape: const CircleBorder(),
               child: const Icon(Icons.add, color: Colors.white, size: 30),
