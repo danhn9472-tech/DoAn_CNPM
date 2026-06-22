@@ -44,6 +44,9 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
   bool _isSearchingDoctors = false;
   StreamSubscription? _doctorSearchSubscription;
 
+  TextEditingController? _drugSearchController;
+  TextEditingController? _doctorSearchController;
+
   @override
   void initState() {
     super.initState();
@@ -215,6 +218,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                         "displayDate": "${DateFormat('yyyy-MM-dd').format(startDate)} - ${DateFormat('yyyy-MM-dd').format(endDate)}",
                       });
                     });
+                    _drugSearchController?.clear();
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                        const SnackBar(content: Text("Đã thêm thuốc vào đơn", style: TextStyle(color: Colors.white)), backgroundColor: AppColors.success)
@@ -618,12 +622,29 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                   ),
                   const SizedBox(height: 8),
                   Autocomplete<Map<String, dynamic>>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      _doctorSearchSubject.add(textEditingValue.text);
-                      if (textEditingValue.text.isEmpty) {
+                    optionsBuilder: (TextEditingValue textEditingValue) async {
+                      final keyword = textEditingValue.text.trim();
+                      if (keyword.isEmpty) {
                         return const Iterable<Map<String, dynamic>>.empty();
                       }
-                      return _doctorSuggestions;
+                      
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      if (keyword != _doctorSearchController?.text.trim()) {
+                         return const Iterable<Map<String, dynamic>>.empty();
+                      }
+
+                      if (mounted) setState(() => _isSearchingDoctors = true);
+                      try {
+                        final results = await _doctorService.searchDoctors(keyword);
+                        if (mounted) setState(() => _isSearchingDoctors = false);
+                        return results.where((doc) => doc['fullName']
+                            .toString()
+                            .toLowerCase()
+                            .startsWith(keyword.toLowerCase()));
+                      } catch (e) {
+                        if (mounted) setState(() => _isSearchingDoctors = false);
+                        return const Iterable<Map<String, dynamic>>.empty();
+                      }
                     },
                     displayStringForOption: (option) => option['fullName'] ?? '',
                     onSelected: (option) {
@@ -632,6 +653,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                       });
                     },
                     fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                      _doctorSearchController = controller;
                       return TextField(
                         controller: controller,
                         focusNode: focusNode,
@@ -792,12 +814,29 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                   ),
                   const SizedBox(height: 12),
                   Autocomplete<Map<String, dynamic>>(
-                    optionsBuilder: (TextEditingValue textEditingValue) {
-                      _searchSubject.add(textEditingValue.text);
-                      if (textEditingValue.text.isEmpty) {
+                    optionsBuilder: (TextEditingValue textEditingValue) async {
+                      final keyword = textEditingValue.text.trim();
+                      if (keyword.isEmpty) {
                         return const Iterable<Map<String, dynamic>>.empty();
                       }
-                      return _suggestions;
+                      
+                      await Future.delayed(const Duration(milliseconds: 300));
+                      if (keyword != _drugSearchController?.text.trim()) {
+                         return const Iterable<Map<String, dynamic>>.empty();
+                      }
+
+                      if (mounted) setState(() => _isSearchingDrugs = true);
+                      try {
+                        final results = await _drugService.searchDrugs(keyword);
+                        if (mounted) setState(() => _isSearchingDrugs = false);
+                        return results.where((drug) => drug['drugName']
+                            .toString()
+                            .toLowerCase()
+                            .startsWith(keyword.toLowerCase()));
+                      } catch (e) {
+                        if (mounted) setState(() => _isSearchingDrugs = false);
+                        return const Iterable<Map<String, dynamic>>.empty();
+                      }
                     },
                     displayStringForOption: (option) =>
                         option['drugName'] ?? '',
@@ -806,6 +845,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                     },
                     fieldViewBuilder:
                         (context, controller, focusNode, onFieldSubmitted) {
+                          _drugSearchController = controller;
                           return TextField(
                             controller: controller,
                             focusNode: focusNode,

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'app_colors.dart';
 import '../models/prescription.dart';
 import '../services/prescription_service.dart';
+import 'prescription_detail_screen.dart';
 
 class PrescriptionListScreen extends StatefulWidget {
   const PrescriptionListScreen({super.key});
@@ -201,31 +202,50 @@ class _PrescriptionListScreenState extends State<PrescriptionListScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Xóa đơn thuốc"),
-        content: Text("Bạn có chắc chắn muốn xóa đơn thuốc '${p.diagnosis}' này không?"),
+        content: Text(
+          "Bạn có chắc chắn muốn xóa đơn thuốc '${p.diagnosis}' này không?",
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Hủy", style: TextStyle(color: AppColors.textMuted)),
+            child: const Text(
+              "Hủy",
+              style: TextStyle(color: AppColors.textMuted),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("Xóa", style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.bold)),
+            child: const Text(
+              "Xóa",
+              style: TextStyle(
+                color: AppColors.danger,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
     );
 
     if (confirm == true) {
-      final res = await _prescriptionService.deletePrescription(p.prescriptionId);
+      final res = await _prescriptionService.deletePrescription(
+        p.prescriptionId,
+      );
       if (mounted) {
         if (res['success'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(res['message']), backgroundColor: AppColors.success),
+            SnackBar(
+              content: Text(res['message']),
+              backgroundColor: AppColors.success,
+            ),
           );
           _loadPrescriptionsForTab(_selectedTabIndex);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(res['message']), backgroundColor: AppColors.danger),
+            SnackBar(
+              content: Text(res['message']),
+              backgroundColor: AppColors.danger,
+            ),
           );
         }
       }
@@ -266,166 +286,163 @@ class _PrescriptionListScreenState extends State<PrescriptionListScreen> {
         : AppColors.background;
     String statusText = prescription.isActive ? "Đang dùng" : "Đã hoàn thành";
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.description_outlined,
-                    color: statusColor,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              prescription.diagnosis,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: prescription.isActive
-                                    ? AppColors.textDark
-                                    : AppColors.textMuted,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (prescription.hasConflict) ...[
-                            const SizedBox(width: 6),
-                            const Icon(
-                              Icons.warning_amber_rounded,
-                              color: AppColors.danger,
-                              size: 18,
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.medical_services_outlined,
-                            size: 14,
-                            color: AppColors.textMuted,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            prescription.doctorName,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textMuted,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    statusText,
-                    style: TextStyle(
-                      color: statusColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PrescriptionDetailScreen(
+              prescriptionId: prescription.prescriptionId,
             ),
           ),
-          const Divider(height: 1, color: AppColors.border),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.calendar_today_outlined,
-                      size: 14,
-                      color: AppColors.textMuted,
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      "Ngày tạo: ${DateFormat('dd/MM/yyyy').format(prescription.createdDate)}",
-                      style: const TextStyle(
-                        fontSize: 12,
+                    child: Icon(
+                      Icons.description_outlined,
+                      color: statusColor,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                prescription.diagnosis,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: prescription.isActive
+                                      ? AppColors.textDark
+                                      : AppColors.textMuted,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (prescription.hasConflict) ...[
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.warning_amber_rounded,
+                                color: AppColors.danger,
+                                size: 18,
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.medical_services_outlined,
+                              size: 14,
+                              color: AppColors.textMuted,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              prescription.doctorName,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: bgColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      statusText,
+                      style: TextStyle(
+                        color: statusColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1, color: AppColors.border),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_outlined,
+                        size: 14,
                         color: AppColors.textMuted,
                       ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.medication_outlined,
-                      size: 16,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${prescription.drugCount} loại thuốc",
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (!prescription.isActive) ...[
-                      const SizedBox(width: 16),
-                      GestureDetector(
-                        onTap: () => _confirmDeletePrescription(prescription),
-                        child: const Icon(
-                          Icons.delete_outline,
-                          color: AppColors.danger,
-                          size: 20,
+                      const SizedBox(width: 6),
+                      Text(
+                        "Ngày tạo: ${DateFormat('dd/MM/yyyy').format(prescription.createdDate)}",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
                         ),
                       ),
                     ],
-                  ],
-                ),
-              ],
+                  ),
+                  Row(
+                    children: [
+                      if (!prescription.isActive) ...[
+                        GestureDetector(
+                          onTap: () => _confirmDeletePrescription(prescription),
+                          child: const Icon(
+                            Icons.delete_outline,
+                            color: AppColors.danger,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

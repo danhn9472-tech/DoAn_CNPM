@@ -42,6 +42,7 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
   List<Map<String, dynamic>> _suggestions = [];
   bool _isSearchingDrugs = false;
   StreamSubscription? _searchSubscription;
+  TextEditingController? _drugSearchController;
 
   @override
   void initState() {
@@ -210,12 +211,29 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
                     // Drug Name Field
                     _buildSectionTitle("Thuốc / Hoạt chất gây dị ứng *"),
                     Autocomplete<Map<String, dynamic>>(
-                      optionsBuilder: (TextEditingValue textEditingValue) {
-                        _searchSubject.add(textEditingValue.text);
-                        if (textEditingValue.text.isEmpty) {
+                      optionsBuilder: (TextEditingValue textEditingValue) async {
+                        final keyword = textEditingValue.text.trim();
+                        if (keyword.isEmpty) {
                           return const Iterable<Map<String, dynamic>>.empty();
                         }
-                        return _suggestions;
+
+                        await Future.delayed(const Duration(milliseconds: 300));
+                        if (keyword != _drugSearchController?.text.trim()) {
+                           return const Iterable<Map<String, dynamic>>.empty();
+                        }
+
+                        if (mounted) setState(() => _isSearchingDrugs = true);
+                        try {
+                          final results = await _drugService.searchDrugs(keyword);
+                          if (mounted) setState(() => _isSearchingDrugs = false);
+                          return results.where((drug) => drug['drugName']
+                              .toString()
+                              .toLowerCase()
+                              .startsWith(keyword.toLowerCase()));
+                        } catch (e) {
+                          if (mounted) setState(() => _isSearchingDrugs = false);
+                          return const Iterable<Map<String, dynamic>>.empty();
+                        }
                       },
                       displayStringForOption: (option) => option['drugName'],
                       onSelected: (option) {
@@ -224,6 +242,7 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
                         });
                       },
                       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                        _drugSearchController = controller;
                         return TextFormField(
                           controller: controller,
                           focusNode: focusNode,
