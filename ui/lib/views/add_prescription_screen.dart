@@ -1,4 +1,4 @@
-// ignore_for_file: unnecessary_to_list_in_spreads, deprecated_member_use
+// ignore_for_file: curly_braces_in_flow_control_structures, unused_field, unnecessary_to_list_in_spreads, deprecated_member_use
 
 import 'dart:async';
 import 'dart:convert';
@@ -160,21 +160,27 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                 final dosage = dosageController.text.trim();
                 final frequency = frequencyController.text.trim();
                 if (dosage.isEmpty || frequency.isEmpty) {
-                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng nhập liều lượng và tần suất")));
-                   return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Vui lòng nhập liều lượng và tần suất"),
+                    ),
+                  );
+                  return;
                 }
 
                 bool draftOk = await _ensureDraftPrescriptionCreated();
                 if (!draftOk) return;
 
                 setState(() => _isChecking = true);
-                
+
                 try {
                   final token = await _storageService.getToken();
                   const String baseUrl = 'https://localhost:7170/api';
-                  
+
                   final addRes = await http.post(
-                    Uri.parse('$baseUrl/Prescriptions/$_draftPrescriptionId/items'),
+                    Uri.parse(
+                      '$baseUrl/Prescriptions/$_draftPrescriptionId/items',
+                    ),
                     headers: {
                       'Content-Type': 'application/json',
                       'Authorization': 'Bearer $token',
@@ -187,11 +193,15 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                       "endDate": endDate.toIso8601String(),
                     }),
                   );
-                  
-                  if (addRes.statusCode == 200 || addRes.statusCode == 201 || addRes.statusCode == 400 || addRes.statusCode == 409) {
+
+                  if (addRes.statusCode == 200 ||
+                      addRes.statusCode == 201 ||
+                      addRes.statusCode == 400 ||
+                      addRes.statusCode == 409) {
                     final addData = jsonDecode(addRes.body);
                     if (addData['success'] == false) {
-                      if (addData['conflicts'] != null && (addData['conflicts'] as List).isNotEmpty) {
+                      if (addData['conflicts'] != null &&
+                          (addData['conflicts'] as List).isNotEmpty) {
                         if (mounted) {
                           Navigator.pop(context); // Đóng modal thêm thuốc
                           _showConflictWarningModal(addData['conflicts']);
@@ -202,9 +212,9 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                       }
                     }
                   } else {
-                     throw Exception("Server lỗi HTTP ${addRes.statusCode}");
+                    throw Exception("Server lỗi HTTP ${addRes.statusCode}");
                   }
-                  
+
                   if (mounted) {
                     setState(() {
                       _selectedDrugs.add({
@@ -215,25 +225,35 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                         "frequency": frequency,
                         "startDate": startDate.toIso8601String(),
                         "endDate": endDate.toIso8601String(),
-                        "displayDate": "${DateFormat('yyyy-MM-dd').format(startDate)} - ${DateFormat('yyyy-MM-dd').format(endDate)}",
+                        "displayDate":
+                            "${DateFormat('yyyy-MM-dd').format(startDate)} - ${DateFormat('yyyy-MM-dd').format(endDate)}",
                       });
                     });
                     _drugSearchController?.clear();
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                       const SnackBar(content: Text("Đã thêm thuốc vào đơn", style: TextStyle(color: Colors.white)), backgroundColor: AppColors.success)
+                      const SnackBar(
+                        content: Text(
+                          "Đã thêm thuốc vào đơn",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        backgroundColor: AppColors.success,
+                      ),
                     );
                   }
                 } catch (e) {
-                   if (mounted) {
-                     ScaffoldMessenger.of(context).showSnackBar(
-                       SnackBar(content: Text("Lỗi: $e"), backgroundColor: AppColors.danger)
-                     );
-                   }
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Lỗi: $e"),
+                        backgroundColor: AppColors.danger,
+                      ),
+                    );
+                  }
                 } finally {
-                   if (mounted) {
-                     setState(() => _isChecking = false);
-                   }
+                  if (mounted) {
+                    setState(() => _isChecking = false);
+                  }
                 }
               },
               child: const Text(
@@ -252,7 +272,9 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
 
     if (_diagnosisController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Vui lòng nhập chẩn đoán trước khi thêm thuốc")),
+        const SnackBar(
+          content: Text("Vui lòng nhập chẩn đoán trước khi thêm thuốc"),
+        ),
       );
       return false;
     }
@@ -283,7 +305,8 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
       try {
         final createData = jsonDecode(createRes.body);
         if (createData is Map) {
-          prescriptionId = createData['prescriptionId'] ?? createData['id'] ?? 0;
+          prescriptionId =
+              createData['prescriptionId'] ?? createData['id'] ?? 0;
         } else if (createData is int) {
           prescriptionId = createData;
         }
@@ -299,7 +322,10 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
       return true;
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Lỗi tạo đơn nháp: $e"), backgroundColor: AppColors.danger),
+        SnackBar(
+          content: Text("Lỗi tạo đơn nháp: $e"),
+          backgroundColor: AppColors.danger,
+        ),
       );
       return false;
     }
@@ -316,16 +342,16 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           child: SafeArea(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Header
-                Row(
+                Column(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.danger.withOpacity(0.1),
                         shape: BoxShape.circle,
@@ -333,28 +359,34 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                       child: const Icon(
                         Icons.warning_amber_rounded,
                         color: AppColors.danger,
-                        size: 32,
+                        size: 40,
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    const Expanded(
-                      child: Text(
-                        "Cảnh báo tương tác thuốc!",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.danger,
-                        ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "CẢNH BÁO NGHIÊM TRỌNG:",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.danger,
+                        letterSpacing: 0.5,
                       ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      "Phát hiện rủi ro y khoa!",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.danger,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  "Hệ thống phát hiện các xung đột nguy hiểm nếu sử dụng kết hợp các loại thuốc trong đơn này. Vui lòng xem xét kỹ trước khi quyết định.",
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 14),
-                ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
+
                 // List of conflicts
                 Flexible(
                   child: ListView.builder(
@@ -363,112 +395,139 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                     itemCount: conflicts.length,
                     itemBuilder: (context, index) {
                       final conflict = conflicts[index];
-                      final severity = conflict['severity'] ?? 'High';
                       final description =
                           conflict['description'] ?? 'Có tương tác nguy hiểm.';
                       final type = conflict['type'] ?? 'Interaction';
 
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
+                        margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                          color: AppColors.danger.withOpacity(0.05),
+                          color: const Color(0xFFFFF8E1), // Light yellow
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.danger.withOpacity(0.3),
+                          border: const Border(
+                            left: BorderSide(color: Colors.orange, width: 6),
+                            top: BorderSide(color: Color(0xFFFDE0C1), width: 1),
+                            right: BorderSide(
+                              color: Color(0xFFFDE0C1),
+                              width: 1,
+                            ),
+                            bottom: BorderSide(
+                              color: Color(0xFFFDE0C1),
+                              width: 1,
+                            ),
                           ),
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              Icons.gpp_bad_outlined,
-                              color: AppColors.danger,
-                              size: 24,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 2,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.danger,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          severity.toString().toUpperCase(),
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        type == 'Allergy'
-                                            ? 'DỊ ỨNG'
-                                            : 'TƯƠNG TÁC',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 12,
-                                          color: AppColors.danger,
-                                        ),
-                                      ),
-                                    ],
+                                  Icon(
+                                    type == 'Allergy'
+                                        ? Icons.sick_outlined
+                                        : Icons.compare_arrows_rounded,
+                                    color: Colors.orange[800],
+                                    size: 20,
                                   ),
-                                  const SizedBox(height: 8),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    description,
-                                    style: const TextStyle(
+                                    type == 'Allergy'
+                                        ? "DỊ ỨNG THUỐC"
+                                        : "TƯƠNG TÁC THUỐC",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
                                       fontSize: 14,
-                                      color: AppColors.textDark,
+                                      color: Colors.orange[800],
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 12),
+                              RichText(
+                                text: TextSpan(
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: AppColors.textDark,
+                                    height: 1.5,
+                                  ),
+                                  children: [
+                                    const TextSpan(
+                                      text: "Nguy cơ: ",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    TextSpan(text: description),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: 24),
-                // Actions
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                           Navigator.pop(context); // Đóng modal
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          "Đã hiểu",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                const SizedBox(height: 16),
+
+                // Action Buttons
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.danger,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      "Xóa thuốc khỏi đơn",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
-                  ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.border),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      "Tiếp tục (Đã tham vấn bác sĩ)",
+                      style: TextStyle(
+                        color: AppColors.textMuted,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Footer
+                const Text(
+                  "Khuyến nghị: Tham vấn bác sĩ hoặc dược sĩ trước khi quyết định",
+                  style: TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),
@@ -480,11 +539,15 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
 
   Future<void> _checkInteractionsAndSave() async {
     if (_diagnosisController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng nhập chẩn đoán")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Vui lòng nhập chẩn đoán")));
       return;
     }
     if (_selectedDrugs.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Vui lòng thêm ít nhất 1 loại thuốc")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Vui lòng thêm ít nhất 1 loại thuốc")),
+      );
       return;
     }
 
@@ -513,7 +576,9 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
       final shouldPop = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: const Text("Hủy tạo đơn thuốc?"),
           content: const Text(
             "Bạn có đơn thuốc chưa được hoàn tất. Bạn có muốn hủy và xóa nháp này không?",
@@ -521,18 +586,26 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text("Tiếp tục", style: TextStyle(color: AppColors.textMuted)),
+              child: const Text(
+                "Tiếp tục",
+                style: TextStyle(color: AppColors.textMuted),
+              ),
             ),
             TextButton(
               onPressed: () async {
                 if (_draftPrescriptionId != null) {
-                  await _prescriptionService.deletePrescription(_draftPrescriptionId!);
+                  await _prescriptionService.deletePrescription(
+                    _draftPrescriptionId!,
+                  );
                 }
                 if (mounted) Navigator.pop(context, true);
               },
               child: const Text(
                 "Xóa & Thoát",
-                style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: AppColors.danger,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -548,392 +621,441 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
         backgroundColor: AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.textDark,
-            size: 20,
+        appBar: AppBar(
+          backgroundColor: AppColors.background,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: AppColors.textDark,
+              size: 20,
+            ),
+            onPressed: () async {
+              if (await _onWillPop()) {
+                if (mounted) Navigator.of(context).pop();
+              }
+            },
           ),
-          onPressed: () async {
-            if (await _onWillPop()) {
-              if (mounted) Navigator.of(context).pop();
-            }
-          },
-        ),
-        title: const Text(
-          "Tạo đơn thuốc mới",
-          style: TextStyle(
-            color: AppColors.textDark,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+          title: const Text(
+            "Tạo đơn thuốc mới",
+            style: TextStyle(
+              color: AppColors.textDark,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+          centerTitle: false,
         ),
-        centerTitle: false,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 2. Khu vực Khối thông tin đơn thuốc
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 2. Khu vực Khối thông tin đơn thuốc
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Tên đơn thuốc / Chẩn đoán *",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _diagnosisController,
+                      decoration: const InputDecoration(
+                        hintText: "Nhập chẩn đoán...",
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Tên bác sĩ (Tùy chọn)",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Autocomplete<Map<String, dynamic>>(
+                      optionsBuilder:
+                          (TextEditingValue textEditingValue) async {
+                            final keyword = textEditingValue.text.trim();
+                            if (keyword.isEmpty) {
+                              return const Iterable<
+                                Map<String, dynamic>
+                              >.empty();
+                            }
+
+                            await Future.delayed(
+                              const Duration(milliseconds: 300),
+                            );
+                            if (keyword !=
+                                _doctorSearchController?.text.trim()) {
+                              return const Iterable<
+                                Map<String, dynamic>
+                              >.empty();
+                            }
+
+                            if (mounted)
+                              setState(() => _isSearchingDoctors = true);
+                            try {
+                              final results = await _doctorService
+                                  .searchDoctors(keyword);
+                              if (mounted)
+                                setState(() => _isSearchingDoctors = false);
+                              return results.where(
+                                (doc) => doc['fullName']
+                                    .toString()
+                                    .toLowerCase()
+                                    .startsWith(keyword.toLowerCase()),
+                              );
+                            } catch (e) {
+                              if (mounted)
+                                setState(() => _isSearchingDoctors = false);
+                              return const Iterable<
+                                Map<String, dynamic>
+                              >.empty();
+                            }
+                          },
+                      displayStringForOption: (option) =>
+                          option['fullName'] ?? '',
+                      onSelected: (option) {
+                        setState(() {
+                          _selectedDoctorId = option['doctorId'];
+                        });
+                      },
+                      fieldViewBuilder:
+                          (context, controller, focusNode, onFieldSubmitted) {
+                            _doctorSearchController = controller;
+                            return TextField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              onChanged: (value) {
+                                if (_selectedDoctorId != null) {
+                                  setState(() {
+                                    _selectedDoctorId = null;
+                                  });
+                                }
+                              },
+                              decoration: InputDecoration(
+                                hintText: "Nhập tên bác sĩ kê đơn",
+                                hintStyle: const TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 13,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.person_outline,
+                                  color: AppColors.textMuted,
+                                ),
+                                suffixIcon: _isSearchingDoctors
+                                    ? const Padding(
+                                        padding: EdgeInsets.all(12.0),
+                                        child: SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      )
+                                    : null,
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.border,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.border,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                      optionsViewBuilder: (context, onSelected, options) {
+                        return Align(
+                          alignment: Alignment.topLeft,
+                          child: Material(
+                            elevation: 4.0,
+                            borderRadius: BorderRadius.circular(12),
+                            clipBehavior: Clip.antiAlias,
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxHeight: 250,
+                                maxWidth:
+                                    MediaQuery.of(context).size.width - 40,
+                              ),
+                              child: ListView.builder(
+                                padding: EdgeInsets.zero,
+                                shrinkWrap: true,
+                                itemCount: options.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  final option = options.elementAt(index);
+                                  return ListTile(
+                                    title: Text(
+                                      option['fullName'] ?? '',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.textDark,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      option['specialty'] ??
+                                          'Chưa rõ chuyên khoa',
+                                      style: const TextStyle(
+                                        color: AppColors.textMuted,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    onTap: () => onSelected(option),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: 24),
+
+              // 3. Khu vực Danh sách thuốc được thêm
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    "Tên đơn thuốc / Chẩn đoán *",
+                    "Danh sách thuốc",
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: AppColors.textDark,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _diagnosisController,
-                    decoration: const InputDecoration(
-                      hintText: "Nhập chẩn đoán...",
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Tên bác sĩ (Tùy chọn)",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textMuted,
+                    decoration: BoxDecoration(
+                      color: AppColors.infoHighlight,
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Autocomplete<Map<String, dynamic>>(
-                    optionsBuilder: (TextEditingValue textEditingValue) async {
-                      final keyword = textEditingValue.text.trim();
-                      if (keyword.isEmpty) {
-                        return const Iterable<Map<String, dynamic>>.empty();
-                      }
-                      
-                      await Future.delayed(const Duration(milliseconds: 300));
-                      if (keyword != _doctorSearchController?.text.trim()) {
-                         return const Iterable<Map<String, dynamic>>.empty();
-                      }
-
-                      if (mounted) setState(() => _isSearchingDoctors = true);
-                      try {
-                        final results = await _doctorService.searchDoctors(keyword);
-                        if (mounted) setState(() => _isSearchingDoctors = false);
-                        return results.where((doc) => doc['fullName']
-                            .toString()
-                            .toLowerCase()
-                            .startsWith(keyword.toLowerCase()));
-                      } catch (e) {
-                        if (mounted) setState(() => _isSearchingDoctors = false);
-                        return const Iterable<Map<String, dynamic>>.empty();
-                      }
-                    },
-                    displayStringForOption: (option) => option['fullName'] ?? '',
-                    onSelected: (option) {
-                      setState(() {
-                        _selectedDoctorId = option['doctorId'];
-                      });
-                    },
-                    fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                      _doctorSearchController = controller;
-                      return TextField(
-                        controller: controller,
-                        focusNode: focusNode,
-                        onChanged: (value) {
-                          if (_selectedDoctorId != null) {
-                            setState(() {
-                              _selectedDoctorId = null;
-                            });
-                          }
-                        },
-                        decoration: InputDecoration(
-                          hintText: "Nhập tên bác sĩ kê đơn",
-                          hintStyle: const TextStyle(
-                            color: AppColors.textMuted,
-                            fontSize: 13,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.person_outline,
-                            color: AppColors.textMuted,
-                          ),
-                          suffixIcon: _isSearchingDoctors
-                              ? const Padding(
-                                  padding: EdgeInsets.all(12.0),
-                                  child: SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                )
-                              : null,
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.border,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: AppColors.border,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    optionsViewBuilder: (context, onSelected, options) {
-                      return Align(
-                        alignment: Alignment.topLeft,
-                        child: Material(
-                          elevation: 4.0,
-                          borderRadius: BorderRadius.circular(12),
-                          clipBehavior: Clip.antiAlias,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxHeight: 250,
-                              maxWidth: MediaQuery.of(context).size.width - 40,
-                            ),
-                            child: ListView.builder(
-                              padding: EdgeInsets.zero,
-                              shrinkWrap: true,
-                              itemCount: options.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                final option = options.elementAt(index);
-                                return ListTile(
-                                  title: Text(option['fullName'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
-                                  subtitle: Text(option['specialty'] ?? 'Chưa rõ chuyên khoa', style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
-                                  onTap: () => onSelected(option),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                    child: Text(
+                      "${_selectedDrugs.length} thuốc",
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
-            // 3. Khu vực Danh sách thuốc được thêm
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Danh sách thuốc",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
+              // Thẻ thuốc đã chọn
+              ..._selectedDrugs.asMap().entries.map((entry) {
+                int index = entry.key;
+                var drug = entry.value;
+                return _buildSelectedDrugCard(
+                  drugName: drug["drugName"],
+                  dosageDesc: drug["dosageDesc"],
+                  dateRange: drug["displayDate"],
+                  onDelete: () =>
+                      setState(() => _selectedDrugs.removeAt(index)),
+                );
+              }).toList(),
+
+              const SizedBox(height: 16),
+
+              // Vùng tìm kiếm và thêm thuốc mới (Dashed Border effect)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.infoHighlight.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.5),
+                    width: 1.5,
+                    style: BorderStyle.solid,
                   ),
+                  // Ghi chú: Flutter chuẩn không có nét đứt (dashed), sử dụng solid mờ thay thế
+                  // hoặc cài package `dotted_border` nếu muốn đúng pixel-perfect theo Figma.
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.infoHighlight,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    "${_selectedDrugs.length} thuốc",
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Tìm kiếm tên thuốc",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+                    const SizedBox(height: 12),
+                    Autocomplete<Map<String, dynamic>>(
+                      optionsBuilder:
+                          (TextEditingValue textEditingValue) async {
+                            final keyword = textEditingValue.text.trim();
+                            if (keyword.isEmpty) {
+                              return const Iterable<
+                                Map<String, dynamic>
+                              >.empty();
+                            }
 
-            // Thẻ thuốc đã chọn
-            ..._selectedDrugs.asMap().entries.map((entry) {
-              int index = entry.key;
-              var drug = entry.value;
-              return _buildSelectedDrugCard(
-                drugName: drug["drugName"],
-                dosageDesc: drug["dosageDesc"],
-                dateRange: drug["displayDate"],
-                onDelete: () => setState(() => _selectedDrugs.removeAt(index)),
-              );
-            }).toList(),
+                            await Future.delayed(
+                              const Duration(milliseconds: 300),
+                            );
+                            if (keyword != _drugSearchController?.text.trim()) {
+                              return const Iterable<
+                                Map<String, dynamic>
+                              >.empty();
+                            }
 
-            const SizedBox(height: 16),
-
-            // Vùng tìm kiếm và thêm thuốc mới (Dashed Border effect)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.infoHighlight.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.primary.withOpacity(0.5),
-                  width: 1.5,
-                  style: BorderStyle.solid,
-                ),
-                // Ghi chú: Flutter chuẩn không có nét đứt (dashed), sử dụng solid mờ thay thế
-                // hoặc cài package `dotted_border` nếu muốn đúng pixel-perfect theo Figma.
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Tìm kiếm tên thuốc",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Autocomplete<Map<String, dynamic>>(
-                    optionsBuilder: (TextEditingValue textEditingValue) async {
-                      final keyword = textEditingValue.text.trim();
-                      if (keyword.isEmpty) {
-                        return const Iterable<Map<String, dynamic>>.empty();
-                      }
-                      
-                      await Future.delayed(const Duration(milliseconds: 300));
-                      if (keyword != _drugSearchController?.text.trim()) {
-                         return const Iterable<Map<String, dynamic>>.empty();
-                      }
-
-                      if (mounted) setState(() => _isSearchingDrugs = true);
-                      try {
-                        final results = await _drugService.searchDrugs(keyword);
-                        if (mounted) setState(() => _isSearchingDrugs = false);
-                        return results.where((drug) => drug['drugName']
-                            .toString()
-                            .toLowerCase()
-                            .startsWith(keyword.toLowerCase()));
-                      } catch (e) {
-                        if (mounted) setState(() => _isSearchingDrugs = false);
-                        return const Iterable<Map<String, dynamic>>.empty();
-                      }
-                    },
-                    displayStringForOption: (option) =>
-                        option['drugName'] ?? '',
-                    onSelected: (option) {
-                      _showAddDrugDialog(option);
-                    },
-                    fieldViewBuilder:
-                        (context, controller, focusNode, onFieldSubmitted) {
-                          _drugSearchController = controller;
-                          return TextField(
-                            controller: controller,
-                            focusNode: focusNode,
-                            decoration: InputDecoration(
-                              hintText: "Nhập tên thuốc hoặc hoạt chất...",
-                              hintStyle: const TextStyle(
-                                color: AppColors.textMuted,
-                                fontSize: 13,
-                              ),
-                              prefixIcon: const Icon(
-                                Icons.search,
-                                color: AppColors.textMuted,
-                              ),
-                              suffixIcon: _isSearchingDrugs
-                                  ? const Padding(
-                                      padding: EdgeInsets.all(12.0),
-                                      child: SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
+                            if (mounted)
+                              setState(() => _isSearchingDrugs = true);
+                            try {
+                              final results = await _drugService.searchDrugs(
+                                keyword,
+                              );
+                              if (mounted)
+                                setState(() => _isSearchingDrugs = false);
+                              return results.where(
+                                (drug) => drug['drugName']
+                                    .toString()
+                                    .toLowerCase()
+                                    .startsWith(keyword.toLowerCase()),
+                              );
+                            } catch (e) {
+                              if (mounted)
+                                setState(() => _isSearchingDrugs = false);
+                              return const Iterable<
+                                Map<String, dynamic>
+                              >.empty();
+                            }
+                          },
+                      displayStringForOption: (option) =>
+                          option['drugName'] ?? '',
+                      onSelected: (option) {
+                        _showAddDrugDialog(option);
+                      },
+                      fieldViewBuilder:
+                          (context, controller, focusNode, onFieldSubmitted) {
+                            _drugSearchController = controller;
+                            return TextField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              decoration: InputDecoration(
+                                hintText: "Nhập tên thuốc hoặc hoạt chất...",
+                                hintStyle: const TextStyle(
+                                  color: AppColors.textMuted,
+                                  fontSize: 13,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.search,
+                                  color: AppColors.textMuted,
+                                ),
+                                suffixIcon: _isSearchingDrugs
+                                    ? const Padding(
+                                        padding: EdgeInsets.all(12.0),
+                                        child: SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
                                         ),
-                                      ),
-                                    )
-                                  : null,
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: AppColors.border,
+                                      )
+                                    : null,
+                                filled: true,
+                                fillColor: Colors.white,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.border,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.border,
+                                  ),
                                 ),
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                  color: AppColors.border,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                  ),
-                ],
+                            );
+                          },
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 30),
-          ],
+              const SizedBox(height: 30),
+            ],
+          ),
         ),
-      ),
-      // 4. Nút chức năng đặc biệt dưới đáy (Bottom Action)
-      bottomNavigationBar: SafeArea(
-        child: InkWell(
-          onTap: _isChecking ? null : _checkInteractionsAndSave,
-          child: Container(
-            height: 60,
-            color: _isChecking
-                ? AppColors.primary.withOpacity(0.7)
-                : AppColors.primary,
-            child: _isChecking
-                ? const Center(
-                    child: CircularProgressIndicator(color: Colors.white),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(
-                        Icons.check_circle_outline,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                      SizedBox(width: 10),
-                      Text(
-                        "TẠO ĐƠN THUỐC",
-                        style: TextStyle(
+        // 4. Nút chức năng đặc biệt dưới đáy (Bottom Action)
+        bottomNavigationBar: SafeArea(
+          child: InkWell(
+            onTap: _isChecking ? null : _checkInteractionsAndSave,
+            child: Container(
+              height: 60,
+              color: _isChecking
+                  ? AppColors.primary.withOpacity(0.7)
+                  : AppColors.primary,
+              child: _isChecking
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(
+                          Icons.check_circle_outline,
                           color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
+                          size: 24,
                         ),
-                      ),
-                    ],
-                  ),
+                        SizedBox(width: 10),
+                        Text(
+                          "TẠO ĐƠN THUỐC",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
   }
 
   Widget _buildSelectedDrugCard({

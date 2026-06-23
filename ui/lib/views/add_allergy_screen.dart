@@ -1,4 +1,4 @@
-// ignore_for_file: unused_import, prefer_final_fields, deprecated_member_use
+// ignore_for_file: curly_braces_in_flow_control_structures, unused_field, unused_import, prefer_final_fields, deprecated_member_use
 
 import 'dart:async';
 import 'dart:convert';
@@ -34,8 +34,14 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
   final DrugService _drugService = DrugService();
 
   final List<String> _predefinedSymptoms = [
-    "Nổi mề đay", "Sưng phù", "Khó thở", "Nôn mửa",
-    "Ngứa da", "Phát ban toàn thân", "Tụt huyết áp", "Tim đập nhanh"
+    "Nổi mề đay",
+    "Sưng phù",
+    "Khó thở",
+    "Nôn mửa",
+    "Ngứa da",
+    "Phát ban toàn thân",
+    "Tụt huyết áp",
+    "Tim đập nhanh",
   ];
 
   final PublishSubject<String> _searchSubject = PublishSubject<String>();
@@ -71,7 +77,6 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
         });
   }
 
-
   Future<void> _addAllergy() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedSeverity == null) {
@@ -101,7 +106,9 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
     if (token == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Không tìm thấy token. Vui lòng đăng nhập lại.")),
+          const SnackBar(
+            content: Text("Không tìm thấy token. Vui lòng đăng nhập lại."),
+          ),
         );
         Navigator.of(context).pop(); // Go back to previous screen
       }
@@ -116,10 +123,14 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Thêm dị ứng thuốc thành công!")),
         );
-        Navigator.of(context).pop(true); // Pop with true to indicate success and refresh
+        Navigator.of(
+          context,
+        ).pop(true); // Pop with true to indicate success and refresh
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'] ?? "Thêm dị ứng thuốc thất bại.")),
+          SnackBar(
+            content: Text(result['message'] ?? "Thêm dị ứng thuốc thất bại."),
+          ),
         );
       }
     }
@@ -162,7 +173,10 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: Colors.white,
+                          ),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
                         const SizedBox(height: 16),
@@ -172,9 +186,16 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white.withOpacity(0.5), width: 1),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.5),
+                                  width: 1,
+                                ),
                               ),
-                              child: const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 24),
+                              child: const Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -183,11 +204,18 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
                                 children: const [
                                   Text(
                                     "Thêm tiền sử dị ứng",
-                                    style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   Text(
                                     "Thông tin quan trọng cho an toàn sinh mạng",
-                                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 13,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -200,7 +228,7 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
                 ),
               ],
             ),
-            
+
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Form(
@@ -211,87 +239,123 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
                     // Drug Name Field
                     _buildSectionTitle("Thuốc / Hoạt chất gây dị ứng *"),
                     Autocomplete<Map<String, dynamic>>(
-                      optionsBuilder: (TextEditingValue textEditingValue) async {
-                        final keyword = textEditingValue.text.trim();
-                        if (keyword.isEmpty) {
-                          return const Iterable<Map<String, dynamic>>.empty();
-                        }
+                      optionsBuilder:
+                          (TextEditingValue textEditingValue) async {
+                            final keyword = textEditingValue.text.trim();
+                            if (keyword.isEmpty) {
+                              return const Iterable<
+                                Map<String, dynamic>
+                              >.empty();
+                            }
 
-                        await Future.delayed(const Duration(milliseconds: 300));
-                        if (keyword != _drugSearchController?.text.trim()) {
-                           return const Iterable<Map<String, dynamic>>.empty();
-                        }
+                            await Future.delayed(
+                              const Duration(milliseconds: 300),
+                            );
+                            if (keyword != _drugSearchController?.text.trim()) {
+                              return const Iterable<
+                                Map<String, dynamic>
+                              >.empty();
+                            }
 
-                        if (mounted) setState(() => _isSearchingDrugs = true);
-                        try {
-                          final results = await _drugService.searchDrugs(keyword);
-                          if (mounted) setState(() => _isSearchingDrugs = false);
-                          return results.where((drug) => drug['drugName']
-                              .toString()
-                              .toLowerCase()
-                              .startsWith(keyword.toLowerCase()));
-                        } catch (e) {
-                          if (mounted) setState(() => _isSearchingDrugs = false);
-                          return const Iterable<Map<String, dynamic>>.empty();
-                        }
-                      },
+                            if (mounted)
+                              setState(() => _isSearchingDrugs = true);
+                            try {
+                              final results = await _drugService.searchDrugs(
+                                keyword,
+                              );
+                              if (mounted)
+                                setState(() => _isSearchingDrugs = false);
+                              return results.where(
+                                (drug) => drug['drugName']
+                                    .toString()
+                                    .toLowerCase()
+                                    .startsWith(keyword.toLowerCase()),
+                              );
+                            } catch (e) {
+                              if (mounted)
+                                setState(() => _isSearchingDrugs = false);
+                              return const Iterable<
+                                Map<String, dynamic>
+                              >.empty();
+                            }
+                          },
                       displayStringForOption: (option) => option['drugName'],
                       onSelected: (option) {
                         setState(() {
                           _selectedDrugId = option['drugId'];
                         });
                       },
-                      fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                        _drugSearchController = controller;
-                        return TextFormField(
-                          controller: controller,
-                          focusNode: focusNode,
-                          onChanged: (value) {
-                            if (_selectedDrugId != null) {
-                              setState(() {
-                                _selectedDrugId = null;
-                              });
-                            }
+                      fieldViewBuilder:
+                          (context, controller, focusNode, onFieldSubmitted) {
+                            _drugSearchController = controller;
+                            return TextFormField(
+                              controller: controller,
+                              focusNode: focusNode,
+                              onChanged: (value) {
+                                if (_selectedDrugId != null) {
+                                  setState(() {
+                                    _selectedDrugId = null;
+                                  });
+                                }
+                              },
+                              decoration: InputDecoration(
+                                hintText:
+                                    "Tìm tên biệt dược (VD: Penicillin...)",
+                                prefixIcon: const Icon(Icons.search),
+                                suffixIcon: _isSearchingDrugs
+                                    ? const Padding(
+                                        padding: EdgeInsets.all(12.0),
+                                        child: SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                          ),
+                                        ),
+                                      )
+                                    : null,
+                                filled: true,
+                                fillColor: AppColors.cardWhite,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.border,
+                                  ),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.border,
+                                  ),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null ||
+                                    value.isEmpty ||
+                                    _selectedDrugId == null) {
+                                  return 'Vui lòng chọn thuốc từ danh sách gợi ý.';
+                                }
+                                return null;
+                              },
+                            );
                           },
-                          decoration: InputDecoration(
-                            hintText: "Tìm tên biệt dược (VD: Penicillin...)",
-                            prefixIcon: const Icon(Icons.search),
-                            suffixIcon: _isSearchingDrugs
-                                ? const Padding(
-                                    padding: EdgeInsets.all(12.0),
-                                    child: SizedBox(
-                                      width: 16, height: 16,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    ),
-                                  )
-                                : null,
-                            filled: true,
-                            fillColor: AppColors.cardWhite,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.border),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: AppColors.border),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty || _selectedDrugId == null) {
-                              return 'Vui lòng chọn thuốc từ danh sách gợi ý.';
-                            }
-                            return null;
-                          },
-                        );
-                      },
                     ),
                     const SizedBox(height: 24),
 
                     // Severity Selection
                     _buildSectionTitle("Mức độ dị ứng *"),
                     _buildSeverityOption("Nhẹ", "Mẩn ngứa, buồn nôn", "Low"),
-                    _buildSeverityOption("Trung bình", "Phát ban toàn thân, sốt", "Moderate"),
-                    _buildSeverityOption("Nghiêm trọng", "Sốc phản vệ, khó thở", "High", showWarningIcon: true),
+                    _buildSeverityOption(
+                      "Trung bình",
+                      "Phát ban toàn thân, sốt",
+                      "Moderate",
+                    ),
+                    _buildSeverityOption(
+                      "Nghiêm trọng",
+                      "Sốc phản vệ, khó thở",
+                      "High",
+                      showWarningIcon: true,
+                    ),
                     const SizedBox(height: 24),
 
                     // Symptoms Selection
@@ -314,14 +378,20 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
                           },
                           selectedColor: AppColors.primary.withOpacity(0.1),
                           labelStyle: TextStyle(
-                            color: _selectedSymptoms.contains(symptom) ? AppColors.primary : AppColors.textMuted,
+                            color: _selectedSymptoms.contains(symptom)
+                                ? AppColors.primary
+                                : AppColors.textMuted,
                             fontWeight: FontWeight.w500,
                           ),
                           side: BorderSide(
-                            color: _selectedSymptoms.contains(symptom) ? AppColors.primary : AppColors.border,
+                            color: _selectedSymptoms.contains(symptom)
+                                ? AppColors.primary
+                                : AppColors.border,
                           ),
                           backgroundColor: AppColors.cardWhite,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                         );
                       }).toList(),
                     ),
@@ -360,19 +430,30 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textDark),
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textDark,
+        ),
       ),
     );
   }
 
-  Widget _buildSeverityOption(String title, String description, String value, {bool showWarningIcon = false}) {
+  Widget _buildSeverityOption(
+    String title,
+    String description,
+    String value, {
+    bool showWarningIcon = false,
+  }) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: _selectedSeverity == value ? AppColors.danger : AppColors.border,
+          color: _selectedSeverity == value
+              ? AppColors.danger
+              : AppColors.border,
           width: _selectedSeverity == value ? 2 : 1,
         ),
       ),
@@ -384,8 +465,17 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
             _selectedSeverity = newValue;
           });
         },
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textDark)),
-        subtitle: Text(description, style: const TextStyle(color: AppColors.textMuted)),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textDark,
+          ),
+        ),
+        subtitle: Text(
+          description,
+          style: const TextStyle(color: AppColors.textMuted),
+        ),
         secondary: showWarningIcon
             ? const Icon(Icons.warning_amber_rounded, color: AppColors.danger)
             : null,
@@ -411,7 +501,9 @@ class _AddAllergyScreenState extends State<AddAllergyScreen> {
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.textMuted,
                 side: const BorderSide(color: AppColors.border),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: const Text("Quay lại"),
