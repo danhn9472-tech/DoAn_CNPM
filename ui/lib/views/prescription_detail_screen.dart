@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_to_list_in_spreads, deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'app_colors.dart';
@@ -9,7 +11,8 @@ class PrescriptionDetailScreen extends StatefulWidget {
   const PrescriptionDetailScreen({super.key, required this.prescriptionId});
 
   @override
-  State<PrescriptionDetailScreen> createState() => _PrescriptionDetailScreenState();
+  State<PrescriptionDetailScreen> createState() =>
+      _PrescriptionDetailScreenState();
 }
 
 class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
@@ -26,7 +29,9 @@ class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
 
   Future<void> _loadDetail() async {
     try {
-      final detail = await _prescriptionService.getPrescriptionDetail(widget.prescriptionId);
+      final detail = await _prescriptionService.getPrescriptionDetail(
+        widget.prescriptionId,
+      );
       setState(() {
         _detail = detail;
         _isLoading = false;
@@ -49,15 +54,24 @@ class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
         iconTheme: const IconThemeData(color: AppColors.textDark),
         title: const Text(
           "Chi tiết đơn thuốc",
-          style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+            color: AppColors.textDark,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
         centerTitle: true,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? Center(child: Text(_errorMessage!, style: const TextStyle(color: AppColors.danger)))
-              : _buildBody(),
+          ? Center(
+              child: Text(
+                _errorMessage!,
+                style: const TextStyle(color: AppColors.danger),
+              ),
+            )
+          : _buildBody(),
     );
   }
 
@@ -68,14 +82,14 @@ class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
     final String doctorName = _detail!['doctorName'] ?? "N/A";
     final String statusStr = _detail!['status'] ?? "Unknown";
     final String notes = _detail!['notes'] ?? "";
-    final DateTime createdDate = _detail!['createdDate'] != null 
-        ? DateTime.parse(_detail!['createdDate']) 
+    final DateTime createdDate = _detail!['createdDate'] != null
+        ? DateTime.parse(_detail!['createdDate'])
         : DateTime.now();
-    
+
     bool isActive = statusStr == 'DangUong';
     String displayStatus = isActive ? "Đang dùng" : "Đã hoàn thành";
     Color statusColor = isActive ? AppColors.success : AppColors.textMuted;
-    
+
     final List<dynamic> items = _detail!['items'] ?? [];
 
     return SingleChildScrollView(
@@ -108,7 +122,10 @@ class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: statusColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -127,11 +144,15 @@ class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
                 const SizedBox(height: 16),
                 _buildInfoRow(Icons.person_outline, "Bác sĩ", doctorName),
                 const SizedBox(height: 12),
-                _buildInfoRow(Icons.calendar_today_outlined, "Ngày tạo", DateFormat('dd/MM/yyyy').format(createdDate)),
+                _buildInfoRow(
+                  Icons.calendar_today_outlined,
+                  "Ngày tạo",
+                  DateFormat('dd/MM/yyyy').format(createdDate),
+                ),
                 if (notes.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   _buildInfoRow(Icons.note_alt_outlined, "Ghi chú", notes),
-                ]
+                ],
               ],
             ),
           ),
@@ -146,10 +167,15 @@ class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
           ),
           const SizedBox(height: 12),
           if (items.isEmpty)
-            const Center(child: Padding(
-              padding: EdgeInsets.all(20.0),
-              child: Text("Không có thuốc nào trong đơn này.", style: TextStyle(color: AppColors.textMuted)),
-            ))
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(20.0),
+                child: Text(
+                  "Không có thuốc nào trong đơn này.",
+                  style: TextStyle(color: AppColors.textMuted),
+                ),
+              ),
+            )
           else
             ...items.map((item) {
               return _buildDrugCard(item);
@@ -172,7 +198,11 @@ class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(color: AppColors.textDark, fontSize: 14, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              color: AppColors.textDark,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ),
       ],
@@ -183,12 +213,17 @@ class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
     final String drugName = item['drugName'] ?? "Unknown";
     final String dosage = item['dosage'] ?? "";
     final String frequency = item['frequency'] ?? "";
-    final DateTime? startDate = item['startDate'] != null ? DateTime.parse(item['startDate']) : null;
-    final DateTime? endDate = item['endDate'] != null ? DateTime.parse(item['endDate']) : null;
-    
+    final DateTime? startDate = item['startDate'] != null
+        ? DateTime.parse(item['startDate'])
+        : null;
+    final DateTime? endDate = item['endDate'] != null
+        ? DateTime.parse(item['endDate'])
+        : null;
+
     String dateRange = "";
     if (startDate != null && endDate != null) {
-      dateRange = "${DateFormat('dd/MM/yyyy').format(startDate)} - ${DateFormat('dd/MM/yyyy').format(endDate)}";
+      dateRange =
+          "${DateFormat('dd/MM/yyyy').format(startDate)} - ${DateFormat('dd/MM/yyyy').format(endDate)}";
     }
 
     return Container(
@@ -214,7 +249,11 @@ class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
               color: AppColors.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.medication, color: AppColors.primary, size: 24),
+            child: const Icon(
+              Icons.medication,
+              color: AppColors.primary,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -232,21 +271,32 @@ class _PrescriptionDetailScreenState extends State<PrescriptionDetailScreen> {
                 const SizedBox(height: 4),
                 Text(
                   "$dosage • $frequency",
-                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600, fontSize: 13),
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
                 ),
                 if (dateRange.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_month, size: 14, color: AppColors.textMuted),
+                      const Icon(
+                        Icons.calendar_month,
+                        size: 14,
+                        color: AppColors.textMuted,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         dateRange,
-                        style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+                        style: const TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
-                ]
+                ],
               ],
             ),
           ),
