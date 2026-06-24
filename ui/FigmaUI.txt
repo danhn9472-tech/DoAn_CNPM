@@ -1,0 +1,110 @@
+# MedAlert - Hệ thống Cảnh báo Tương tác Thuốc
+
+## 1. Hệ thống Màu sắc (Color Palette)
+
+| Loại | Mã màu (HEX) | Sử dụng |
+| :--- | :--- | :--- |
+| **Primary** | `#0284C7` | Header chính, nút quan trọng, trạng thái active. |
+| **Background** | `#F8FAFC` | Nền chung của toàn ứng dụng (Slate 50). |
+| **Card/White** | `#FFFFFF` | Nền card, input, các khối nội dung. |
+| **Text Dark** | `#0F172A` | Tiêu đề, chữ chính (Slate 900). |
+| **Text Muted** | `#64748B` | Chữ phụ, ghi chú, icon nhạt (Slate 500). |
+| **Border** | `#E2E8F0` | Đường kẻ, viền card (Slate 200). |
+| **Danger/Severe** | `#EF4444` | Cảnh báo nghiêm trọng, nút xóa, dị ứng. |
+| **Warning/Moderate** | `#F59E0B` | Cảnh báo trung bình (Amber 500). |
+| **Success/Safe** | `#10B981` | Trạng thái an toàn, đã hoàn thành. |
+| **Info/Highlight** | `#E0F2FE` | Nền badge, nền các khối thông tin phụ. |
+
+---
+
+## 2. Thành phần UI dùng chung (Common Components)
+
+### Button
+- **Primary:** Nền `#0284C7`, text trắng, bo góc `xl` (12px), h-12.
+- **Outline:** Viền `#E2E8F0`, text `#64748B`.
+- **Danger:** Nền `#EF4444`, text trắng.
+
+### Card
+- **Style:** Viền `#E2E8F0`, shadow nhẹ, bo góc `xl` (12px).
+- **Variants:** Card thuốc (DrugCard), Card đơn thuốc, Card bệnh lý.
+
+### Input & Label
+- **Input:** Chiều cao 12 (48px), bo góc `xl`, icon nằm trong (left-4).
+- **Label:** Text size `sm`, màu `#0F172A`, font-medium.
+
+### Badge & Status
+- **SeverityBadge:** Phân loại theo mức độ: Nghiêm trọng (Đỏ), Trung bình (Cam), Nhẹ (Xanh dương), An toàn (Xanh lá).
+
+---
+
+## 3. Danh sách Giao diện (Screens)
+
+### A. Nhóm Xác thực (Authentication)
+1.  **Login:**
+    - Hero section màu xanh `#0284C7` với bo góc dưới 3xl.
+    - Form đăng nhập nổi lên trên nền hero.
+    - Hỗ trợ Social Login (Google, Facebook).
+2.  **Register:**
+    - Form chi tiết: Họ tên, Email, SĐT, Ngày sinh, Mật khẩu.
+    - Có thanh đo độ mạnh mật khẩu (4 mức).
+3.  **Forgot Password:**
+    - Luồng 2 bước: Nhập email nhận OTP -> Đặt lại mật khẩu.
+4.  **OTP Verification:**
+    - Input 6 ô vuông (h-13), có bộ đếm thời gian gửi lại.
+
+### B. Nhóm Chính (Main Dashboard)
+1.  **Dashboard:**
+    - Header chứa thông tin cá nhân (Avatar, tên).
+    - Card chỉ số sức khỏe nhanh: Nhóm máu, BMI, Chiều cao, Cân nặng.
+    - Danh sách thuốc đang dùng trong ngày (DrugCard).
+2.  **Bottom Navigation:**
+    - 4 Menu: Trang chủ, Đơn thuốc, Hồ sơ, Cài đặt.
+    - Menu active có màu `#0284C7`.
+
+### C. Nhóm Quản lý Đơn thuốc
+1.  **Prescription List:**
+    - Bộ lọc Tab: Tất cả, Đang sử dụng, Đã hoàn thành.
+    - Search bar theo tên bệnh hoặc bác sĩ.
+    - Nút FAB (Floating Action Button) dấu cộng để thêm đơn mới.
+2.  **Add Prescription:**
+    - Form nhập tên đơn, bác sĩ.
+    - Danh sách thuốc đã thêm (dạng card nhỏ).
+    - Form tra cứu thuốc nhanh tích hợp bên trong.
+3.  **Drug Lookup:**
+    - Trang chi tiết thông tin thuốc: Hoạt chất, Liều dùng, Tác dụng phụ, Chống chỉ định.
+    - Highlight đặc biệt cho các cảnh báo nghiêm trọng.
+
+### D. Nhóm Hồ sơ Sức khỏe
+1.  **Health Profile:**
+    - Phân đoạn (Segmented Control): Bệnh lý nền vs Tiền sử dị ứng.
+    - Bệnh lý nền: Hiển thị dạng Chip và Card chi tiết.
+    - Tiền sử dị ứng: Card màu đỏ đặc trưng, hiển thị triệu chứng và mức độ.
+2.  **Add Condition/Allergy:**
+    - Search suggestion (Dropdown) cho các loại bệnh và tên thuốc.
+    - Allergy form có bộ chọn mức độ (Severity Picker) trực quan với icon cảnh báo.
+
+### E. Nhóm Cài đặt & Cá nhân
+1.  **Settings:**
+    - Card Profile ở header (blur hiệu ứng trắng).
+    - Menu phân nhóm: Tài khoản, Tùy chọn (Thông báo, Darkmode, Ngôn ngữ), Khác.
+    - Nút Đăng xuất màu đỏ.
+2.  **Edit Profile:**
+    - Thay đổi ảnh đại diện (Camera icon overlay).
+    - Form thông tin cá nhân, bộ chọn Giới tính dạng tab.
+
+---
+
+## 4. Hiệu ứng Đặc biệt (Feedback & Modals)
+
+### Modal Cảnh báo Tương tác (Interaction Warning)
+- **Visual:** Backdrop làm mờ, Card viền đỏ phía trên.
+- **Content:** So sánh trực quan giữa 2 loại thuốc (Thuốc A - X - Thuốc B).
+- **Action:** Ưu tiên nút "Xóa thuốc khỏi đơn" (Màu đỏ), nút "Tiếp tục" (Dạng Outline).
+
+---
+
+## 5. Thông số kỹ thuật Layout (Mobile-first)
+- **Viewport:** 390px x 844px (Tương đương iPhone 13/14).
+- **Border Radius:** `xl` (12px) cho card/nút, `3xl` (24px) cho các khối lớn.
+- **Shadow:** `shadow-sm` cho card, `shadow-lg` cho header/bottom nav.
+```

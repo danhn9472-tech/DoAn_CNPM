@@ -1,0 +1,65 @@
+# Flutter-specific ignores
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+
+# Web-specific ignores
+build/web/
+
+# Android-specific ignores
+android/**/gen/
+android/**/out/
+android/**/build/
+android/local.properties
+android/key.properties
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+
+# iOS/macOS-specific ignores
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/DerivedData/
+**/ios/.generated/
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/App.framework
+**/ios/Flutter/App.podspec
+**/ios/Flutter/App.framework.dSYM
+
+# IDE-specific ignores
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Miscellaneous ignores
+.DS_Store
+*.log
+*.pyc
+*.swp
+.history
+*.class
+app.*.symbols
+app.*.map.json
+
+# Plugin registrants & auto-generated files
+**/GeneratedPluginRegistrant.java
+**/GeneratedPluginRegistrant.h
+**/GeneratedPluginRegistrant.swift
+**/GeneratedPluginRegistrant.m
+**/generated_plugin_registrant.cc
+**/generated_plugin_registrant.h
+**/generated_plugin_registrant.dart
+**/generated_main_dartexecutable.dart
+**/generated_plugins.cmake
+**/generated_plugins.txt
+pubspec.lock
